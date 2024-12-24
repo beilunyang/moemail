@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -11,17 +11,21 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { EXPIRY_OPTIONS } from "@/types/email"
-import { EMAIL_CONFIG } from "@/config"
 
 interface CreateDialogProps {
   onEmailCreated: () => void
+}
+
+interface DomainResponse {
+  domains: string[]
 }
 
 export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [emailName, setEmailName] = useState("")
-  const [domain, setDomain] = useState(EMAIL_CONFIG.DOMAINS[0])
+  const [domains, setDomains] = useState<string[]>([])
+  const [currentDomain, setCurrentDomain] = useState("")
   const [expiryTime, setExpiryTime] = useState(EXPIRY_OPTIONS[1].value.toString())
   const { toast } = useToast()
 
@@ -42,13 +46,13 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
       const response = await fetch("/api/emails/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           name: emailName,
-          domain,
+          domain: currentDomain,
           expiryTime: parseInt(expiryTime)
         })
       })
-      
+
       if (!response.ok) {
         const data = await response.json()
         toast({
@@ -77,6 +81,17 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
     }
   }
 
+  const fetchDomains = async () => {
+    const response = await fetch("/api/emails/domains");
+    const data = (await response.json()) as DomainResponse;
+    setDomains(data.domains);
+    setCurrentDomain(data.domains[0]);
+  };
+
+  useEffect(() => {
+    fetchDomains()
+  }, [])
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -97,13 +112,13 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
               placeholder="输入邮箱名"
               className="flex-1"
             />
-            {EMAIL_CONFIG.DOMAINS.length > 1 && (
-              <Select value={domain} onValueChange={setDomain}>
+            {domains.length > 1 && (
+              <Select value={currentDomain} onValueChange={setCurrentDomain}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {EMAIL_CONFIG.DOMAINS.map(d => (
+                  {domains.map(d => (
                     <SelectItem key={d} value={d}>@{d}</SelectItem>
                   ))}
                 </SelectContent>
@@ -118,7 +133,7 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
               <RefreshCw className="w-4 h-4" />
             </Button>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <Label className="shrink-0 text-muted-foreground">过期时间</Label>
             <RadioGroup
@@ -138,7 +153,7 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
           </div>
 
           <div className="text-sm text-gray-500">
-            完整邮箱地址将为: {emailName ? `${emailName}@${domain}` : "..."}
+            完整邮箱地址将为: {emailName ? `${emailName}@${currentDomain}` : "..."}
           </div>
         </div>
         <div className="flex justify-end gap-2">
