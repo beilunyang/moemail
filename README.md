@@ -230,7 +230,7 @@ pnpm deploy:email
 ```bash
 pnpm deploy:cleanup
 ```
-5. 有关Cloudflare配置可见上述的Github Actions中关于Cloudflare的所有配置
+5. Cloudflare的相关配置见上述的Github Actions中关于Cloudflare的描述
 
 # 四、Webhook 集成
 
