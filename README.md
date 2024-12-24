@@ -102,20 +102,20 @@
 6. 在 Overview 中选择刚刚部署的 Cloudflare Pages（应该是`moemail`）
 7. 在 Settings 中选择变量和机密，添加如下变量
 
- **变量获取步骤：**   
+     **变量获取步骤：**   
 
-  - 登录 [Github Developer](https://github.com/settings/developers) 创建一个新的 OAuth App
-  - 生成一个新的 `Client ID` 和 `Client Secret`
-  - 设置 `Application name` 为 `<your-app-name>`
-  - 设置 `Homepage URL` 为 `https://<your-domain>`（该域名用于访问）
-  - 设置 `Authorization callback URL` 为 `https://<your-domain>/api/auth/callback/github`
+      - 登录 [Github Developer](https://github.com/settings/developers) 创建一个新的 OAuth App
+      - 生成一个新的 `Client ID` 和 `Client Secret`
+      - 设置 `Application name` 为 `<your-app-name>`
+      - 设置 `Homepage URL` 为 `https://<your-domain>`（该域名用于访问）
+      - 设置 `Authorization callback URL` 为 `https://<your-domain>/api/auth/callback/github`
 ---
 |变量名|获取|示例|作用
 |--|--|--|--|
 |`AUTH_GITHUB_ID`| [GitHub Developers](https://github.com/settings/developers)|sdfds***|管理员必要设置|
 |`AUTH_GITHUB_SECRET`|[GitHub Developers](https://github.com/settings/developers)|sadadf***|管理员必要设置|
 |`AUTH_SECRET`|随意|123456|用于页面验证|
----
+
 #### Cloudflare邮件路由配置
 8. 需要在 Cloudflare 控制台配置邮件路由，将收到的邮件转发给 Email Worker 处理。
 
@@ -123,9 +123,9 @@
     - 点击左侧菜单的 "**电子邮件**" -> "**电子邮件路由**"
     - 如果显示 “电子邮件路由当前被禁用，没有在路由电子邮件”，请点击 "启用电子邮件路由"
     ![启用电子邮件路由](https://pic.otaku.ren/20241223/AQADNcQxG_K0SVd-.jpg "启用电子邮件路由")
-    5. 点击后，会提示你添加电子邮件路由 DNS 记录，点击 “**添加记录并启用**” 即可
+    - 点击后，会提示你添加电子邮件路由 DNS 记录，点击 “**添加记录并启用**” 即可
     ![添加电子邮件路由 DNS 记录](https://pic.otaku.ren/20241223/AQADN8QxG_K0SVd-.jpg "添加电子邮件路由 DNS 记录")
-    6. 配置路由规则：
+    - 配置路由规则：
       - Catch-all 地址: 启用 "**Catch-all**"
       - 编辑 Catch-all 地址
         - 操作: 选择 "**发送到 Worker**"
@@ -135,7 +135,7 @@
 9. **注意事项**
     - 确保域名的 DNS 托管在 Cloudflare
     - Email Worker 必须已经部署成功
-
+10.  然后回到GitHub重试部署，让所有变量生效
 ## 2. 本地运行与Wrangler部署
 
 ### 前置要求
