@@ -13,7 +13,6 @@
   <a href="#技术栈">技术栈</a> •
   <a href="#本地运行">本地运行</a> •
   <a href="#部署">部署</a> •
-  <a href="#Cloudflare 邮件路由配置">Cloudflare 邮件路由配置</a> •
   <a href="#Webhook 集成">Webhook 集成</a> •
   <a href="#环境变量">环境变量</a> •
   <a href="#Github OAuth App 配置">Github OAuth App 配置</a> •
@@ -23,7 +22,7 @@
   <a href="#支持">支持</a>
 </p>
 
-## 在线演示
+# 一、在线演示
 [https://moemail.app](https://moemail.app)
 
 ![首页](https://pic.otaku.ren/20241209/AQADwsUxG9k1uVZ-.jpg "首页")
@@ -57,8 +56,87 @@
 - **邮件处理**: [Cloudflare Email Workers](https://developers.cloudflare.com/email-routing/)
 - **类型安全**: [TypeScript](https://www.typescriptlang.org/)
 - **ORM**: [Drizzle ORM](https://orm.drizzle.team/)
+# 二、变量预览
+### Github Actions Secrets 配置
+|变量名|获取|示例|作用|
+|--|--|--|--|
+|`CLOUDFLARE_ACCOUNT_ID`|[Workers Dashboard](https://dash.cloudflare.com/?to=/:account/workers)|`5eb191067edd4db3********`|供Actions部署使用|
+|`CLOUDFLARE_API_TOKEN`|[API](https://dash.cloudflare.com/profile/api-tokens)|`udfsifds***`|供Actions部署使用|
+|`DATABASE_NAME`|[D1 NAME](https://dash.cloudflare.com/?to=/:account/workers/d1)|`moemail`|供Actions部署使用|
+|`DATABASE_ID`|[D1 ID](https://dash.cloudflare.com/?to=/:account/workers/d1/databases)|`8c0a179b-60b5-418a-a77*-**`|供Actions部署使用|
+|`NEXT_PUBLIC_EMAIL_DOMAIN`|自行输入|`moemail.app`|作为邮箱后缀|
+---  
+### Cloudflare 环境变量配置
+|变量名|获取|示例|作用
+|--|--|--|--|
+|`AUTH_GITHUB_ID`| [GitHub Developers](https://github.com/settings/developers)|sdfds***|必要设置|
+|`AUTH_GITHUB_SECRET`|[GitHub Developers](https://github.com/settings/developers)|sadadf***|管理员必要设置|
+|`AUTH_SECRET`|随意|123456|用于验证|
+---
+# 三、部署
+## 1. Github Actions 部署
 
-## 本地运行
+### 部署步骤
+#### Github配置
+1. 点赞并fork该仓库
+2. 进入fork的仓库中，点击`settings`-->`secrets and variables`-->`Actions`-->`New respository secret`添加如下变量
+    - **注意**：`CLOUDFLARE_API_TOKEN`设置：`创建令牌`-->`编辑 Cloudflare Workers`-->`添加更多`-->找到`D1`-->对应权限`编辑`
+
+|变量名|获取|示例|作用|
+|--|--|--|--|
+|`CLOUDFLARE_ACCOUNT_ID`|[Workers Dashboard](https://dash.cloudflare.com/?to=/:account/workers)|`5eb191067edd4db3********`|供Actions部署使用|
+|`CLOUDFLARE_API_TOKEN`|[API](https://dash.cloudflare.com/profile/api-tokens)|`udfsifds***`|供Actions部署使用|
+|`DATABASE_NAME`|[D1 NAME](https://dash.cloudflare.com/?to=/:account/workers/d1)|`moemail`|供Actions部署使用|
+|`DATABASE_ID`|[D1 ID](https://dash.cloudflare.com/?to=/:account/workers/d1/databases)|`8c0a179b-60b5-418a-a77*-**`|供Actions部署使用|
+|`NEXT_PUBLIC_EMAIL_DOMAIN`|自行输入|`moemail.app`,`b.com`|作为邮箱后缀(多个添加，以逗号隔开)|
+
+
+3. 设置好后，进入仓库的 Actions 页面
+    - 选择 "Deploy" workflow
+    - 点击 "Run workflow"
+    - 选择需要执行的部署选项
+    - 点击 "Run workflow" 开始部署  
+4. 等待部署完成即可（部署进度可以在仓库的 Actions 标签页查看）  
+#### Cloudflare变量配置                    
+5. 部署完成后，进入[cloudflare Workers and pages](https://dash.cloudflare.com/) 
+6. 在 Overview 中选择刚刚部署的 Cloudflare Pages（应该是`moemail`）
+7. 在 Settings 中选择变量和机密，添加如下变量
+
+ **变量获取步骤：**   
+
+  - 登录 [Github Developer](https://github.com/settings/developers) 创建一个新的 OAuth App
+  - 生成一个新的 `Client ID` 和 `Client Secret`
+  - 设置 `Application name` 为 `<your-app-name>`
+  - 设置 `Homepage URL` 为 `https://<your-domain>`（该域名用于访问）
+  - 设置 `Authorization callback URL` 为 `https://<your-domain>/api/auth/callback/github`
+---
+|变量名|获取|示例|作用
+|--|--|--|--|
+|`AUTH_GITHUB_ID`| [GitHub Developers](https://github.com/settings/developers)|sdfds***|管理员必要设置|
+|`AUTH_GITHUB_SECRET`|[GitHub Developers](https://github.com/settings/developers)|sadadf***|管理员必要设置|
+|`AUTH_SECRET`|随意|123456|用于页面验证|
+---
+#### Cloudflare邮件路由配置
+8. 需要在 Cloudflare 控制台配置邮件路由，将收到的邮件转发给 Email Worker 处理。
+
+    - 选择您的域名
+    - 点击左侧菜单的 "**电子邮件**" -> "**电子邮件路由**"
+    - 如果显示 “电子邮件路由当前被禁用，没有在路由电子邮件”，请点击 "启用电子邮件路由"
+    ![启用电子邮件路由](https://pic.otaku.ren/20241223/AQADNcQxG_K0SVd-.jpg "启用电子邮件路由")
+    5. 点击后，会提示你添加电子邮件路由 DNS 记录，点击 “**添加记录并启用**” 即可
+    ![添加电子邮件路由 DNS 记录](https://pic.otaku.ren/20241223/AQADN8QxG_K0SVd-.jpg "添加电子邮件路由 DNS 记录")
+    6. 配置路由规则：
+      - Catch-all 地址: 启用 "**Catch-all**"
+      - 编辑 Catch-all 地址
+        - 操作: 选择 "**发送到 Worker**"
+        - 目标位置: 选择刚刚部署的 "**email-receiver-worker**"
+        - 保存
+      ![配置路由规则](https://pic.otaku.ren/20241223/AQADNsQxG_K0SVd-.jpg "配置路由规则")
+9. **注意事项**
+    - 确保域名的 DNS 托管在 Cloudflare
+    - Email Worker 必须已经部署成功
+
+## 2. 本地运行与Wrangler部署
 
 ### 前置要求
 
@@ -99,20 +177,19 @@ cp .env.example .env.local
 pnpm db:migrate-local
 ```
 
-### 开发
-
-1. 启动开发服务器：
+### 调试与开发
+6. 启动开发服务器：
 ```bash
 pnpm dev
 ```
 
-2. 测试邮件 worker：
+7. 测试邮件 worker：
 目前无法本地运行并测试，请使用 wrangler 部署邮件 worker 并测试
 ```bash
 pnpm deploy:email
 ```
 
-3. 测试清理 worker：
+8. 测试清理 worker：
 ```bash
 pnpm dev:cleanup
 pnpm test:cleanup
@@ -123,9 +200,8 @@ pnpm test:cleanup
 pnpm generate-test-data
 ```
 
-## 部署
 
-### 本地 Wrangler 部署
+###  本地 Wrangler 部署
 
 1. 设置 wrangler：
 ```bash
@@ -155,94 +231,8 @@ pnpm deploy:email
 pnpm deploy:cleanup
 ```
 
-### Github Actions 部署
 
-本项目可使用 GitHub Actions 实现自动化部署。支持以下触发方式：
-
-1. **自动触发**：推送新的 tag 时自动触发部署流程
-2. **手动触发**：在 GitHub Actions 页面手动触发，可选择以下部署选项：
-   - Run database migrations：执行数据库迁移
-   - Deploy email Worker：重新部署邮件 Worker
-   - Deploy cleanup Worker：重新部署清理 Worker
-
-#### 部署步骤
-
-1. 在 GitHub 仓库设置中添加以下 Secrets：
-   - `CLOUDFLARE_API_TOKEN`: Cloudflare API 令牌
-   - `CLOUDFLARE_ACCOUNT_ID`: Cloudflare 账户 ID
-   - `DATABASE_NAME`: D1 数据库名称
-   - `DATABASE_ID`: D1 数据库 ID
-   - `NEXT_PUBLIC_EMAIL_DOMAIN`: 邮箱域名 (例如: moemail.app)
-
-2. 选择触发方式：
-
-   **方式一：推送 tag 触发**
-   ```bash
-   # 创建新的 tag
-   git tag v1.0.0
-   
-   # 推送 tag 到远程仓库
-   git push origin v1.0.0
-   ```
-
-   **方式二：手动触发**
-   - 进入仓库的 Actions 页面
-   - 选择 "Deploy" workflow
-   - 点击 "Run workflow"
-   - 选择需要执行的部署选项
-   - 点击 "Run workflow" 开始部署
-
-3. GitHub Actions 会自动执行以下任务：
-   - 构建并部署主应用到 Cloudflare Pages
-   - 根据选项或文件变更执行数据库迁移
-   - 根据选项或文件变更部署 Email Worker
-   - 根据选项或文件变更部署 Cleanup Worker
-
-4. 部署进度可以在仓库的 Actions 标签页查看
-
-#### 注意事项
-- 确保所有 Secrets 都已正确设置
-- 使用 tag 触发时，tag 必须以 `v` 开头（例如：v1.0.0）
-- 使用 tag 触发时，只有文件发生变更的部分会被部署
-- 手动触发时，可以选择性地执行特定的部署任务
-- 每次部署都会重新部署主应用
-
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/beilunyang/moemail)
-
-
-### 初次部署完成后
-初次通过本地 Wrangler 或者 Github Actions 部署完成后，请登录到 Cloudflare 控制台，添加 AUTH 认证 相关 SECRETS
-- 登录 [Cloudflare 控制台](https://dash.cloudflare.com/) 并选择你的账户
-- 选择 Workers 和 Pages
-- 在 Overview 中选择刚刚部署的 Cloudflare Pages
-- 在 Settings 中选择变量和机密
-- 添加 AUTH_GITHUB_ID, AUTH_GITHUB_SECRET, AUTH_SECRET
-
-## Cloudflare 邮件路由配置
-
-在部署完成后，需要在 Cloudflare 控制台配置邮件路由，将收到的邮件转发给 Email Worker 处理。
-
-1. 登录 [Cloudflare 控制台](https://dash.cloudflare.com/)
-2. 选择您的域名
-3. 点击左侧菜单的 "电子邮件" -> "电子邮件路由"
-4. 如果显示 “电子邮件路由当前被禁用，没有在路由电子邮件”，请点击 "启用电子邮件路由"
-![启用电子邮件路由](https://pic.otaku.ren/20241223/AQADNcQxG_K0SVd-.jpg "启用电子邮件路由")
-5. 点击后，会提示你添加电子邮件路由 DNS 记录，点击 “添加记录并启用” 即可
-![添加电子邮件路由 DNS 记录](https://pic.otaku.ren/20241223/AQADN8QxG_K0SVd-.jpg "添加电子邮件路由 DNS 记录")
-6. 配置路由规则：
-   - Catch-all 地址: 启用 "Catch-all"
-   - 编辑 Catch-all 地址
-    - 操作: 选择 "发送到 Worker"
-    - 目标位置: 选择刚刚部署的 "email-receiver-worker"
-    - 保存
-  ![配置路由规则](https://pic.otaku.ren/20241223/AQADNsQxG_K0SVd-.jpg "配置路由规则")
-
-### 注意事项
-- 确保域名的 DNS 托管在 Cloudflare
-- Email Worker 必须已经部署成功
-
-
-## Webhook 集成
+# 四、Webhook 集成
 
 当收到新邮件时，系统会向用户配置并且已启用的 Webhook URL 发送 POST 请求。
 
@@ -281,7 +271,7 @@ X-Webhook-Event: new_message
 pnpm webhook-test-server
 ```
 
-测试服务器会在本地启动一个 HTTP 服务器，监听 3001 端口（http://localhost:3001）, 并打印收到的 Webhook 消息详情。
+测试服务器会在本地启动一个 HTTP 服务器，监听 3001 端口（http://localhost:3001），并打印收到的 Webhook 消息详情。
 
 如果需要进行外网测试，可以通过 Cloudflare Tunnel 将服务暴露到外网：
 ```bash
@@ -292,31 +282,7 @@ pnpx cloudflared tunnel --url http://localhost:3001
 - Webhook 接口应在 10 秒内响应
 - 非 2xx 响应码会触发重试
 
-## 环境变量
 
-本项目使用以下环境变量：
-
-### 认证相关
-- `AUTH_GITHUB_ID`: GitHub OAuth App ID
-- `AUTH_GITHUB_SECRET`: GitHub OAuth App Secret
-- `AUTH_SECRET`: NextAuth Secret，用来加密 session，请设置一个随机字符串
-
-### 邮箱配置
-- `NEXT_PUBLIC_EMAIL_DOMAIN`: 邮箱域名，支持多域名，用逗号分隔 (例如: moemail.app,bitibiti.com)
-
-### Cloudflare 配置
-- `CLOUDFLARE_API_TOKEN`: Cloudflare API Token
-- `CLOUDFLARE_ACCOUNT_ID`: Cloudflare Account ID
-- `DATABASE_NAME`: D1 数据库名称
-- `DATABASE_ID`: D1 数据库 ID
-
-## Github OAuth App 配置
-
-- 登录 [Github Developer](https://github.com/settings/developers) 创建一个新的 OAuth App
-- 生成一个新的 `Client ID` 和 `Client Secret`
-- 设置 `Application name` 为 `<your-app-name>`
-- 设置 `Homepage URL` 为 `https://<your-domain>`
-- 设置 `Authorization callback URL` 为 `https://<your-domain>/api/auth/callback/github`
 
 
 ## 贡献
@@ -342,4 +308,3 @@ pnpx cloudflared tunnel --url http://localhost:3001
 <br />
 <br />
 <a href="https://www.buymeacoffee.com/beilunyang" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="width: 400px;" ></a>
-
