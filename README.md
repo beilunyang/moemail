@@ -24,8 +24,8 @@
   <a href="#支持">支持</a>
 </p>
 
-## 在线演示
-[https://moemail.app](https://moemail.app)
+## 在线演示（自己成功部署）
+[https://bravexist.eu.org/](https://bravexist.eu.org/)
 
 ![首页](https://pic.otaku.ren/20241209/AQADwsUxG9k1uVZ-.jpg "首页")
 
@@ -413,19 +413,7 @@ pnpx cloudflared tunnel --url http://localhost:3001
 
 本项目采用 [MIT](LICENSE) 许可证
 
-## 交流群
-<img src="https://pic.otaku.ren/20241224/AQADoMExG_K0WVd-.jpg" style="width: 400px;"/>
-<br />
-如二维码失效，请添加我的个人微信（hansenones），并备注 “MoeMail” 加入微信交流群
 
 ## 支持
 
-如果你喜欢这个项目，欢迎给它一个 Star ⭐️
-或者进行赞助
-<br />
-<br />
-<img src="https://pic.otaku.ren/20240212/AQADPrgxGwoIWFZ-.jpg" style="width: 400px;"/>
-<br />
-<br />
-<a href="https://www.buymeacoffee.com/beilunyang" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="width: 400px;" ></a>
-
+如果你喜欢这个项目，欢迎给[作者](https://github.com/beilunyang/moemail)一个 Star ⭐️
