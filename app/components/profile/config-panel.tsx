@@ -89,7 +89,7 @@ export function ConfigPanel() {
             <Input 
               value={emailDomains}
               onChange={(e) => setEmailDomains(e.target.value)}
-              placeholder="多个域名用逗号分隔，如: moemail.app,bitibiti.com"
+              placeholder="多个域名用逗号分隔，如: bravexist.eu.org,bitibiti.com"
             />
           </div>
         </div>

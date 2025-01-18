@@ -350,7 +350,7 @@ X-Webhook-Event: new_message
   "content": "邮件文本内容",
   "html": "邮件HTML内容",
   "receivedAt": "2024-01-01T12:00:00.000Z",
-  "toAddress": "your-email@moemail.app"
+  "toAddress": "your-email@bravexist.eu.org"
 }
 ```
 

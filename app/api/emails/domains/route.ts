@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const domainString = await getRequestContext().env.SITE_CONFIG.get("EMAIL_DOMAINS")
 
-    return NextResponse.json({ domains: domainString ? domainString.split(',') : ["moemail.app"] })
+    return NextResponse.json({ domains: domainString ? domainString.split(',') : ["bravexist.eu.org"] })
   } catch (error) {
     console.error('Failed to fetch domains:', error)
     return NextResponse.json(
