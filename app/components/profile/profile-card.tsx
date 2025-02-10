@@ -4,13 +4,14 @@ import { User } from "next-auth"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { signOut } from "next-auth/react"
-import { Github, Mail, Settings, Crown, Sword, User2 } from "lucide-react"
+import { Github, Mail, Settings, Crown, Sword, User2, Gem } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { WebhookConfig } from "./webhook-config"
 import { PromotePanel } from "./promote-panel"
 import { useRolePermission } from "@/hooks/use-role-permission"
 import { PERMISSIONS } from "@/lib/permissions"
 import { ConfigPanel } from "./config-panel"
+import { ApiKeyPanel } from "./api-key-panel"
 
 interface ProfileCardProps {
   user: User
@@ -18,6 +19,7 @@ interface ProfileCardProps {
 
 const roleConfigs = {
   emperor: { name: '皇帝', icon: Crown },
+  duke: { name: '公爵', icon: Gem },
   knight: { name: '骑士', icon: Sword },
   civilian: { name: '平民', icon: User2 },
 } as const
@@ -96,6 +98,7 @@ export function ProfileCard({ user }: ProfileCardProps) {
 
       {canManageConfig && <ConfigPanel />}
       {canPromote && <PromotePanel />}
+      {canManageWebhook && <ApiKeyPanel />}
 
       <div className="flex flex-col sm:flex-row gap-4 px-1">
         <Button 

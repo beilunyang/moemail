@@ -17,8 +17,10 @@ import {
 export function ConfigPanel() {
   const [defaultRole, setDefaultRole] = useState<string>("")
   const [emailDomains, setEmailDomains] = useState<string>("")
+  const [adminContact, setAdminContact] = useState<string>("")
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
+
 
   useEffect(() => {
     fetchConfig()
@@ -42,7 +44,11 @@ export function ConfigPanel() {
       const res = await fetch("/api/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ defaultRole, emailDomains }),
+        body: JSON.stringify({ 
+          defaultRole, 
+          emailDomains,
+          adminContact 
+        }),
       })
 
       if (!res.ok) throw new Error("保存失败")
@@ -77,6 +83,7 @@ export function ConfigPanel() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value={ROLES.DUKE}>公爵</SelectItem>
               <SelectItem value={ROLES.KNIGHT}>骑士</SelectItem>
               <SelectItem value={ROLES.CIVILIAN}>平民</SelectItem>
             </SelectContent>
@@ -90,6 +97,17 @@ export function ConfigPanel() {
               value={emailDomains}
               onChange={(e) => setEmailDomains(e.target.value)}
               placeholder="多个域名用逗号分隔，如: bravexist.eu.org,bitibiti.com"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <span className="text-sm">管理员联系方式:</span>
+          <div className="flex-1">
+            <Input 
+              value={adminContact}
+              onChange={(e) => setAdminContact(e.target.value)}
+              placeholder="如: 微信号、邮箱等"
             />
           </div>
         </div>

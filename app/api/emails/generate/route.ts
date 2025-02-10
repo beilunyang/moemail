@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server"
 import { nanoid } from "nanoid"
-import { auth } from "@/lib/auth"
 import { createDb } from "@/lib/db"
 import { emails } from "@/lib/schema"
 import { eq, and, gt, sql } from "drizzle-orm"
 import { EXPIRY_OPTIONS } from "@/types/email"
 import { EMAIL_CONFIG } from "@/config"
 import { getRequestContext } from "@cloudflare/next-on-pages"
-
+import { getUserId } from "@/lib/apiKey"
 export const runtime = "edge"
 
 export async function POST(request: Request) {
   const db = createDb()
-  const session = await auth()
+
+  const userId = await getUserId()
 
   try {
     const activeEmailsCount = await db
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       .from(emails)
       .where(
         and(
-          eq(emails.userId, session!.user!.id!),
+          eq(emails.userId, userId!),
           gt(emails.expiresAt, new Date())
         )
       )
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
       address,
       createdAt: now,
       expiresAt: expires,
-      userId: session!.user!.id
+      userId: userId!
     }
     
     const result = await db.insert(emails)

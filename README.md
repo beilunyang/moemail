@@ -16,6 +16,7 @@
   <a href="#邮箱域名配置">邮箱域名配置</a> •
   <a href="#权限系统">权限系统</a> •
   <a href="#Webhook 集成">Webhook 集成</a> •
+  <a href="#OpenAPI">OpenAPI</a> •
   <a href="#环境变量">环境变量</a> •
   <a href="#Github OAuth App 配置">Github OAuth App 配置</a> •
   <a href="#贡献">贡献</a> •
@@ -47,6 +48,7 @@
 - 🎉 **可爱的 UI**：简洁可爱萌萌哒 UI 界面
 - 🔔 **Webhook 通知**：支持通过 webhook 接收新邮件通知
 - 🛡️ **权限系统**：支持基于角色的权限控制系统
+- 🔑 **OpenAPI**：支持通过 API Key 访问 OpenAPI
 
 ## 技术栈
 
@@ -276,48 +278,39 @@ pnpm deploy:cleanup
 
 本项目采用基于角色的权限控制系统（RBAC）。
 
-### 权限配置
+### 角色配置
 
 新用户默认角色由皇帝在个人中心的网站设置中配置：
+- 公爵：新用户将获得临时邮箱、Webhook 配置权限以及 API Key 管理权限
 - 骑士：新用户将获得临时邮箱和 Webhook 配置权限
-- 平民：新用户无任何权限，需要等待皇帝册封为骑士
-
-### 角色管理
-
-1. **册封骑士**
-   - 皇帝可以在个人中心的角色管理面板中册封骑士
-   - 通过用户邮箱查找并册封
-   - 平民被册封后将获得临时邮箱和 Webhook 配置权限
-   - 不能册封已经是骑士的用户
-   - 不能册封皇帝
-
-2. **贬为平民**
-   - 皇帝可以将骑士贬为平民
-   - 被贬为平民后将失去所有权限
-   - 不能贬低已经是平民的用户
-   - 不能贬低皇帝
+- 平民：新用户无任何权限，需要等待皇帝册封为骑士或公爵
 
 ### 角色等级
 
-系统包含三个角色等级：
+系统包含四个角色等级：
 
 1. **皇帝（Emperor）**
    - 网站所有者
    - 拥有所有权限
-   - 可以配置新用户默认角色
-   - 可以册封骑士或将骑士贬为平民
-   - 每个站点仅允许一位皇帝
+   - 每个站点只能有一个皇帝
 
-2. **骑士（Knight）**
+2. **公爵（Duke）**  
+   - 超级用户
+   - 可以使用临时邮箱功能
+   - 可以配置 Webhook
+   - 可以使用创建 API Key 调用 OpenAPI
+   - 可以被皇帝贬为骑士或平民
+
+3. **骑士（Knight）**
    - 高级用户
    - 可以使用临时邮箱功能
    - 可以配置 Webhook
-   - 可以被皇帝贬为平民
+   - 可以被皇帝贬为平民或册封为公爵
 
 3. **平民（Civilian）**
    - 普通用户
    - 无任何权限
-   - 可以被皇帝册封为骑士
+   - 可以被皇帝册封为骑士或者公爵
 
 ### 角色升级
 
@@ -325,9 +318,16 @@ pnpm deploy:cleanup
    - 第一个访问 `/api/roles/init-emperor` 接口的用户将成为皇帝，即网站所有者
    - 站点已有皇帝后，无法再提升其他用户为皇帝
 
-2. **成为骑士**
-   - 皇帝在个人中心页面对平民进行册封
-   - 或由皇帝设置新用户默认为骑士角色
+2. **角色变更**
+   - 皇帝可以在个人中心页面将其他用户设为公爵、骑士或平民
+
+### 权限说明
+
+- **邮箱管理**：创建和管理临时邮箱
+- **Webhook 管理**：配置邮件通知的 Webhook
+- **API Key 管理**：创建和管理 API 访问密钥
+- **用户管理**：升降用户角色
+- **系统配置**：管理系统全局设置
 
 
 ## Webhook 集成
@@ -380,6 +380,83 @@ pnpx cloudflared tunnel --url http://localhost:3001
 - Webhook 接口应在 10 秒内响应
 - 非 2xx 响应码会触发重试
 
+## OpenAPI
+
+本项目提供了 OpenAPI 接口，支持通过 API Key 进行访问。API Key 可以在个人中心页面创建（需要是公爵或皇帝角色）。
+
+### 使用 API Key
+
+在请求头中添加 API Key：
+```http
+X-API-Key: YOUR_API_KEY
+```
+
+### API 接口
+
+#### 创建临时邮箱
+```http
+POST /api/emails/generate
+Content-Type: application/json
+
+{
+  "name": "test",
+  "expiryTime": 3600000,
+  "domain": "moemail.app"
+}
+```
+参数说明：
+- `name`: 邮箱前缀，可选
+- `expiryTime`: 有效期（毫秒），可选值：3600000（1小时）、86400000（1天）、604800000（7天）、0（永久）
+- `domain`: 邮箱域名，可通过 `/api/emails/domains` 获取可用域名列表
+
+#### 获取邮箱列表
+```http
+GET /api/emails?cursor=xxx
+```
+参数说明：
+- `cursor`: 分页游标，可选
+
+#### 获取指定邮箱邮件列表
+```http
+GET /api/emails/{emailId}?cursor=xxx
+```
+参数说明：
+- `cursor`: 分页游标，可选
+
+#### 删除邮箱
+```http
+DELETE /api/emails/{emailId}
+```
+
+#### 获取单封邮件内容
+```http
+GET /api/emails/{emailId}/{messageId}
+```
+
+### 使用示例
+
+使用 curl 创建临时邮箱：
+```bash
+curl -X POST https://your-domain.com/api/emails/generate \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "test",
+    "expiryTime": 3600000,
+    "domain": "moemail.app"
+  }'
+```
+
+使用 JavaScript 获取邮件列表：
+```javascript
+const res = await fetch('https://your-domain.com/api/emails/your-email-id', {
+  headers: {
+    'X-API-Key': 'YOUR_API_KEY'
+  }
+});
+const data = await res.json();
+```
+
 ## 环境变量
 
 本项目使用以下环境变量：
@@ -414,6 +491,3 @@ pnpx cloudflared tunnel --url http://localhost:3001
 本项目采用 [MIT](LICENSE) 许可证
 
 
-## 支持
-
-如果你喜欢这个项目，欢迎给[作者](https://github.com/beilunyang/moemail)一个 Star ⭐️

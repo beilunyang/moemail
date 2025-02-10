@@ -1,16 +1,17 @@
-import { auth } from "@/lib/auth"
 import { createDb } from "@/lib/db"
 import { and, eq, gt, lt, or, sql } from "drizzle-orm"
 import { NextResponse } from "next/server"
 import { emails } from "@/lib/schema"
 import { encodeCursor, decodeCursor } from "@/lib/cursor"
+import { getUserId } from "@/lib/apiKey"
 
 export const runtime = "edge"
 
 const PAGE_SIZE = 20
 
 export async function GET(request: Request) {
-  const session = await auth()
+  const userId = await getUserId()
+
   const { searchParams } = new URL(request.url)
   const cursor = searchParams.get('cursor')
   
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
 
   try {
     const baseConditions = and(
-      eq(emails.userId, session!.user!.id!),
+      eq(emails.userId, userId!),
       gt(emails.expiresAt, new Date())
     )
 

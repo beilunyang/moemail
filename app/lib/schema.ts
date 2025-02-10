@@ -93,6 +93,23 @@ export const userRoles = sqliteTable("user_role", {
   pk: primaryKey({ columns: [table.userId, table.roleId] }),
 }));
 
+export const apiKeys = sqliteTable('api_keys', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => users.id),
+  name: text('name').notNull().unique(),
+  key: text('key').notNull().unique(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  expiresAt: integer('expires_at', { mode: 'timestamp' }),
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+});
+
+export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
+  user: one(users, {
+    fields: [apiKeys.userId],
+    references: [users.id],
+  }),
+}));
+
 export const userRolesRelations = relations(userRoles, ({ one }) => ({
   user: one(users, {
     fields: [userRoles.userId],
@@ -106,7 +123,8 @@ export const userRolesRelations = relations(userRoles, ({ one }) => ({
 
 export const usersRelations = relations(users, ({ many }) => ({
   userRoles: many(userRoles),
-})); 
+  apiKeys: many(apiKeys),
+}));
 
 export const rolesRelations = relations(roles, ({ many }) => ({
   userRoles: many(userRoles),

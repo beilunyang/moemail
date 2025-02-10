@@ -1,14 +1,30 @@
 import { NextResponse } from "next/server"
 import { createDb } from "@/lib/db"
-import { messages } from "@/lib/schema"
+import { messages, emails } from "@/lib/schema"
 import { and, eq } from "drizzle-orm"
-
+import { getUserId } from "@/lib/apiKey"
 export const runtime = "edge"
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string; messageId: string }> }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string; messageId: string }> }) {
   try {
     const { id, messageId } = await params
     const db = createDb()
+    const userId = await getUserId()
+
+    const email = await db.query.emails.findFirst({
+      where: and(
+        eq(emails.id, id),
+        eq(emails.userId, userId!)
+      )
+    })
+
+    if (!email) {
+      return NextResponse.json(
+        { error: "无权限查看" },
+        { status: 403 }
+      )
+    }
+
     const message = await db.query.messages.findFirst({
       where: and(
         eq(messages.id, messageId),

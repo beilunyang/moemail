@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
 import { createDb } from "@/lib/db"
 import { emails, messages } from "@/lib/schema"
 import { eq, and, lt, or, sql } from "drizzle-orm"
 import { encodeCursor, decodeCursor } from "@/lib/cursor"
-
+import { getUserId } from "@/lib/apiKey"
 export const runtime = "edge"
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth()
+  const userId = await getUserId()
 
   try {
     const db = createDb()
@@ -19,7 +18,7 @@ export async function DELETE(
     const email = await db.query.emails.findFirst({
       where: and(
         eq(emails.id, id),
-        eq(emails.userId, session!.user!.id!)
+        eq(emails.userId, userId!)
       )
     })
 
@@ -57,6 +56,22 @@ export async function GET(
   try {
     const db = createDb()
     const { id } = await params
+
+    const userId = await getUserId()
+
+    const email = await db.query.emails.findFirst({
+      where: and(
+        eq(emails.id, id),
+        eq(emails.userId, userId!)
+      )
+    })
+
+    if (!email) {
+      return NextResponse.json(
+        { error: "无权限查看" },
+        { status: 403 }
+      )
+    }
 
     const baseConditions = eq(messages.emailId, id)
 

@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   try {
     const { userId, roleName } = await request.json() as { 
       userId: string, 
-      roleName: typeof ROLES.KNIGHT | typeof ROLES.CIVILIAN 
+      roleName: typeof ROLES.DUKE | typeof ROLES.KNIGHT | typeof ROLES.CIVILIAN 
     };
     if (!userId || !roleName) {
       return Response.json(
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (![ROLES.KNIGHT, ROLES.CIVILIAN].includes(roleName)) {
+    if (![ROLES.DUKE, ROLES.KNIGHT, ROLES.CIVILIAN].includes(roleName)) {
       return Response.json(
         { error: "角色不合法" },
         { status: 400 }
@@ -47,9 +47,11 @@ export async function POST(request: Request) {
     });
 
     if (!targetRole) {
-      const description = roleName === ROLES.KNIGHT 
-        ? "高级用户" 
-        : "普通用户";
+      const description = {
+        [ROLES.DUKE]: "超级用户",
+        [ROLES.KNIGHT]: "高级用户",
+        [ROLES.CIVILIAN]: "普通用户",
+      }[roleName];
 
       const [newRole] = await db.insert(roles)
         .values({
@@ -64,7 +66,6 @@ export async function POST(request: Request) {
 
     return Response.json({ 
       success: true,
-      message: roleName === ROLES.KNIGHT ? "册封成功" : "贬为平民"
     });
   } catch (error) {
     console.error("Failed to change user role:", error);

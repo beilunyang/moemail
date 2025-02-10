@@ -37,8 +37,13 @@ export function WebhookConfig() {
 
   if (initialLoading) {
     return (
-      <div className="flex justify-center py-8">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      <div className="text-center">
+        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">加载中...</p>
+        </div>
       </div>
     )
   }
@@ -138,8 +143,8 @@ export function WebhookConfig() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button 
-                      type="button" 
+                    <Button
+                      type="button"
                       variant="outline"
                       onClick={handleTest}
                       disabled={testing || !url}
@@ -179,10 +184,10 @@ export function WebhookConfig() {
                   Content-Type: application/json{'\n'}
                   X-Webhook-Event: new_message
                 </pre>
-                
+
                 <p>请求体示例:</p>
                 <pre className="bg-background p-2 rounded text-xs overflow-auto">
-{`{
+                  {`{
   "emailId": "email-uuid",
   "messageId": "message-uuid",
   "fromAddress": "sender@example.com",
