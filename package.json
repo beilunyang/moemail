@@ -66,6 +66,7 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
     "vercel": "39.1.1",
+    "vitepress": "^1.6.3",
     "wrangler": "^3.91.0"
   }
 }
