@@ -1,0 +1,567 @@
+name: 构建多平台可执行文件
+
+on:
+  push:
+    tags:
+      - 'v*'  # 添加标签触发条件，匹配 v1.0.0 这样的标签
+  workflow_dispatch:
+    inputs:
+      is_prerelease:
+        description: '是否为预发布版本'
+        required: true
+        default: false
+        type: boolean
+      project_dir:
+        description: '项目子目录路径（相对于仓库根目录）'
+        required: true
+        default: 'moemail-auto-deploy'
+        type: string
+
+env:
+  APP_NAME: moemail-auto-deploy
+  PROJECT_DIR: ${{ github.event.inputs.project_dir || 'moemail-auto-deploy' }}
+  PYTHON_VERSION: '3.11'
+  CACHE_VERSION: v1
+  RETRY_TIMES: 2
+  LANG: zh_CN.UTF-8
+  LC_ALL: zh_CN.UTF-8
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      build_time: ${{ steps.get_version.outputs.build_time }}
+      branch: ${{ steps.get_branch.outputs.branch }}
+      is_prerelease: ${{ steps.check_prerelease.outputs.is_prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+
+      - name: 设置中文编码
+        run: |
+          echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV
+          echo "LC_ALL=zh_CN.UTF-8" >> $GITHUB_ENV
+          locale-gen zh_CN.UTF-8 || true
+          locale || true
+
+      - name: 获取分支信息
+        id: get_branch
+        run: |
+          BRANCH=${GITHUB_REF#refs/heads/}
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            BRANCH=${GITHUB_REF#refs/tags/}
+          fi
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+      - name: 从标签获取版本号
+        id: get_version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="dev-$(git rev-parse --short HEAD)"
+          fi
+          BUILD_TIME=$(date '+%Y-%m-%d %H:%M:%S')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_time=$BUILD_TIME" >> $GITHUB_OUTPUT
+      
+      - name: 检查是否为预发布版本
+        id: check_prerelease
+        run: |
+          if [[ "${{ github.event.inputs.is_prerelease }}" == "true" ]]; then
+            IS_PRERELEASE=true
+          elif [[ "$VERSION" == *"-alpha"* || "$VERSION" == *"-beta"* || "$VERSION" == *"-rc"* || "$VERSION" == "dev-"* ]]; then
+            IS_PRERELEASE=true
+          else
+            IS_PRERELEASE=false
+          fi
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+
+  build:
+    needs: [prepare]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: "Windows"
+            artifact_name: Windows
+            timeout: 30
+          - os: ubuntu-22.04
+            name: "Linux"
+            artifact_name: Linux
+            timeout: 25
+          - os: macos-latest
+            name: "MacOS-ARM64"
+            artifact_name: MacOS-ARM64
+            arch: arm64
+            timeout: 25
+          - os: macos-latest
+            name: "MacOS-Intel"
+            artifact_name: MacOS-Intel
+            arch: x86_64
+            timeout: 25
+    
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: ${{ matrix.timeout }}
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      BUILD_TIME: ${{ needs.prepare.outputs.build_time }}
+      
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: ${{ github.ref }}
+
+    - name: 设置中文编码
+      shell: bash
+      run: |
+        if [[ "${{ matrix.name }}" == "Linux" ]]; then
+          echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV
+          echo "LC_ALL=zh_CN.UTF-8" >> $GITHUB_ENV
+          sudo locale-gen zh_CN.UTF-8 || true
+          locale || true
+        elif [[ "${{ matrix.name }}" == "MacOS-ARM64" || "${{ matrix.name }}" == "MacOS-Intel" ]]; then
+          echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV
+          echo "LC_ALL=zh_CN.UTF-8" >> $GITHUB_ENV
+        fi
+
+    - name: 配置Git
+      shell: bash
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          git checkout ${GITHUB_REF#refs/tags/}
+        else
+          git checkout $GITHUB_SHA
+        fi
+
+    - name: 设置Python环境
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        cache-dependency-path: '**/requirements*.txt'
+
+    # Windows特定步骤
+    - name: Windows - 安装依赖
+      if: matrix.name == 'Windows'
+      shell: pwsh
+      run: |
+        # 设置PowerShell使用UTF-8编码
+        [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+        $PSDefaultParameterValues['*:Encoding'] = 'utf8'
+        
+        cd ${{ env.PROJECT_DIR }}
+        python -m pip install --upgrade pip
+        pip install pyinstaller wheel setuptools
+        pip install -r requirements.txt
+        echo "VERSION=$env:VERSION" >> $env:GITHUB_ENV
+        echo "BUILD_TIME=$env:BUILD_TIME" >> $env:GITHUB_ENV
+
+    # MacOS ARM64特定步骤
+    - name: MacOS ARM64 - 安装依赖
+      if: matrix.name == 'MacOS-ARM64'
+      run: |
+        cd ${{ env.PROJECT_DIR }}
+        python -m pip install --upgrade pip
+        pip install pyinstaller wheel setuptools
+        pip install -r requirements.txt
+
+    # MacOS Intel特定步骤
+    - name: MacOS Intel - 安装依赖
+      if: matrix.name == 'MacOS-Intel'
+      run: |
+        cd ${{ env.PROJECT_DIR }}
+        arch -x86_64 pip3 install --upgrade pip
+        arch -x86_64 pip3 install pyinstaller wheel setuptools
+        arch -x86_64 pip3 install -r requirements.txt
+
+    # Linux特定步骤
+    - name: Linux - 安装依赖
+      if: matrix.name == 'Linux'
+      run: |
+        cd ${{ env.PROJECT_DIR }}
+        python -m pip install --upgrade pip
+        pip install pyinstaller wheel setuptools
+        pip install -r requirements.txt
+
+    - name: 缓存PyInstaller构建
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ env.PROJECT_DIR }}/build
+          ${{ env.PROJECT_DIR }}/dist
+          ${{ env.PROJECT_DIR }}/*.spec
+        key: ${{ runner.os }}-${{ matrix.arch || 'default' }}-pyinstaller-${{ env.CACHE_VERSION }}-${{ hashFiles('${{ env.PROJECT_DIR }}/**/*.py', '${{ env.PROJECT_DIR }}/**/*.spec', '${{ env.PROJECT_DIR }}/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.arch || 'default' }}-pyinstaller-${{ env.CACHE_VERSION }}-
+
+    # Windows构建
+    - name: Windows - 构建可执行文件
+      if: matrix.name == 'Windows'
+      shell: pwsh
+      run: |
+        # 设置PowerShell使用UTF-8编码
+        [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+        $PSDefaultParameterValues['*:Encoding'] = 'utf8'
+        
+        cd ${{ env.PROJECT_DIR }}
+        pyinstaller ${{ env.APP_NAME }}.spec --clean --noconfirm
+        
+        Write-Host "添加版本信息到应用程序资源..."
+        if (Test-Path "dist/${{ env.APP_NAME }}.exe") {
+          echo "构建可执行文件成功: dist/${{ env.APP_NAME }}.exe" 
+        }
+
+    # MacOS ARM64构建
+    - name: MacOS ARM64 - 构建可执行文件
+      if: matrix.name == 'MacOS-ARM64'
+      run: |
+        cd ${{ env.PROJECT_DIR }}
+        pyinstaller ${{ env.APP_NAME }}.spec --clean --noconfirm
+
+    # MacOS Intel构建
+    - name: MacOS Intel - 构建可执行文件
+      if: matrix.name == 'MacOS-Intel'
+      env:
+        TARGET_ARCH: 'x86_64'
+      run: |
+        cd ${{ env.PROJECT_DIR }}
+        arch -x86_64 python3 -m PyInstaller ${{ env.APP_NAME }}.spec --clean --noconfirm
+
+    # Linux构建
+    - name: Linux - 构建可执行文件
+      if: matrix.name == 'Linux'
+      run: |
+        cd ${{ env.PROJECT_DIR }}
+        pyinstaller ${{ env.APP_NAME }}.spec --clean --noconfirm
+
+    # 公共验证步骤
+    - name: 验证构建 - Windows
+      if: matrix.name == 'Windows'
+      shell: pwsh
+      run: |
+        # 设置PowerShell使用UTF-8编码
+        [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+        $PSDefaultParameterValues['*:Encoding'] = 'utf8'
+        
+        cd ${{ env.PROJECT_DIR }}
+        Write-Host "当前工作目录: $PWD"
+        Write-Host "目录内容:"
+        Get-ChildItem -Force
+        
+        Write-Host "`ndist 目录内容:"
+        if (Test-Path dist) {
+          Get-ChildItem dist -Force -Recurse | Select-Object FullName, Length, LastWriteTime | Format-Table -AutoSize
+          
+          $mainExePath = "dist/${{ env.APP_NAME }}.exe"
+          if (Test-Path $mainExePath) {
+            $fileSize = (Get-Item $mainExePath).Length
+            Write-Host "`n可执行文件信息:"
+            Write-Host "路径: $mainExePath"
+            Write-Host "大小: $([math]::Round($fileSize/1MB, 2)) MB"
+            Write-Host "创建时间: $((Get-Item $mainExePath).CreationTime)"
+            
+            if ($fileSize -lt 1MB) {
+              throw "构建文件过小，可能存在问题"
+            }
+          } else {
+            throw "未找到主可执行文件"
+          }
+        } else {
+          throw "dist 目录不存在!"
+        }
+
+    - name: 验证构建 - Unix
+      if: matrix.name != 'Windows'
+      shell: bash
+      run: |
+        cd ${{ env.PROJECT_DIR }}
+        echo "当前工作目录: $(pwd)"
+        echo "目录内容:"
+        ls -la
+        
+        echo "dist 目录内容:"
+        if [ -d "dist" ]; then
+          ls -la dist
+          find dist -type f -exec ls -lh {} \;
+          
+          # 检查生成的可执行文件
+          if [ -d "dist/${{ env.APP_NAME }}" ]; then
+            echo "可执行文件信息:"
+            MAIN_EXEC="dist/${{ env.APP_NAME }}/${{ env.APP_NAME }}"
+            if [ -f "$MAIN_EXEC" ]; then
+              file_size=$(du -h "$MAIN_EXEC" | cut -f1)
+              echo "路径: $MAIN_EXEC"
+              echo "大小: $file_size"
+              echo "权限: $(ls -la $MAIN_EXEC | awk '{print $1}')"
+              
+              # 确保它是可执行的
+              chmod +x "$MAIN_EXEC"
+            else
+              echo "警告: 未找到主可执行文件，检查其他输出文件"
+              find dist -type f -name "${{ env.APP_NAME }}" -o -name "${{ env.APP_NAME }}.*"
+            fi
+          fi
+        else
+          echo "错误: dist 目录不存在!"
+          exit 1
+        fi
+
+    - name: 生成构建信息文件
+      shell: bash
+      run: |
+        # 生成构建信息文件
+        cd ${{ env.PROJECT_DIR }}
+        if [[ "${{ matrix.name }}" == "Windows" ]]; then
+          echo "版本: $VERSION" > dist/build_info.txt
+          echo "构建时间: $BUILD_TIME" >> dist/build_info.txt
+          echo "构建分支: ${{ needs.prepare.outputs.branch }}" >> dist/build_info.txt
+          echo "提交SHA: $GITHUB_SHA" >> dist/build_info.txt
+        else
+          echo "版本: $VERSION" > dist/build_info.txt
+          echo "构建时间: $BUILD_TIME" >> dist/build_info.txt
+          echo "构建分支: ${{ needs.prepare.outputs.branch }}" >> dist/build_info.txt
+          echo "提交SHA: $GITHUB_SHA" >> dist/build_info.txt
+        fi
+
+    - name: 上传构建产物
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.APP_NAME }}-${{ matrix.artifact_name }}
+        path: ${{ env.PROJECT_DIR }}/dist/
+        retention-days: 7
+        if-no-files-found: error
+
+    - name: 上传构建日志
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.APP_NAME }}-${{ matrix.artifact_name }}-Logs
+        path: |
+          ${{ env.PROJECT_DIR }}/*.log
+          ${{ env.PROJECT_DIR }}/**/*.log
+          ${{ env.PROJECT_DIR }}/dist/**/*.log
+        retention-days: 2
+        if-no-files-found: ignore
+
+  create-release:
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      PROJECT_DIR: ${{ github.event.inputs.project_dir || 'moemail-auto-deploy' }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 设置中文编码
+        run: |
+          echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV
+          echo "LC_ALL=zh_CN.UTF-8" >> $GITHUB_ENV
+          sudo apt-get update
+          sudo apt-get install -y locales
+          sudo locale-gen zh_CN.UTF-8 || true
+          sudo update-locale LANG=zh_CN.UTF-8 LC_ALL=zh_CN.UTF-8 || true
+          locale || true
+
+      - name: 安装工具
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq zip unzip
+
+      - name: 删除旧的 releases 和 tags
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN }}
+        run: |
+          CURRENT_TAG=${{ github.ref_name }}
+          echo "当前tag: $CURRENT_TAG"
+          
+          releases=$(gh api repos/${{ github.repository }}/releases | jq '.[1:] | .[] | {id: .id, tag_name: .tag_name}')
+          
+          if [ ! -z "$releases" ]; then
+            echo "发现需要删除的旧releases..."
+            echo "$releases" | jq -r '"\(.id) \(.tag_name)"' | while read -r release_id tag_name; do
+              echo "正在删除release ID: $release_id, tag: $tag_name"
+              gh api -X DELETE repos/${{ github.repository }}/releases/$release_id
+              git push origin :refs/tags/$tag_name || echo "删除tag $tag_name 失败，可能已经不存在"
+            done
+            echo "旧releases和tags清理完成"
+          else
+            echo "没有需要删除的旧releases"
+          fi
+
+      - name: 下载所有构建产物
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: ${{ env.APP_NAME }}-*
+          merge-multiple: false
+          
+      - name: 生成SHA256校验和
+        run: |
+          mkdir -p checksums
+          cd artifacts
+          
+          for platform_dir in */; do
+            platform=$(basename "$platform_dir")
+            if [[ $platform == *"Logs"* ]]; then
+              continue
+            fi
+            
+            echo "正在为 $platform 生成校验和..."
+            cd "$platform"
+            find . -type f -not -name "*.log" -not -name "*.sha256" | sort | xargs sha256sum > "../../checksums/${platform}.sha256"
+            cd ..
+          done
+          
+          cd ../checksums
+          echo "生成的校验和文件:"
+          ls -la
+
+      - name: 生成更新日志
+        id: changelog
+        run: |
+          echo "### 更新内容" > changelog.md
+          echo "" >> changelog.md
+          echo "版本号: v${{ env.VERSION }}" >> changelog.md
+          echo "构建时间: ${{ needs.prepare.outputs.build_time }}" >> changelog.md
+          echo "子目录: ${{ env.PROJECT_DIR }}" >> changelog.md
+          echo "" >> changelog.md
+          
+          echo "#### 变更记录" >> changelog.md
+          git log $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD --pretty=format:"* %s" >> changelog.md
+          
+          echo "" >> changelog.md
+          echo "#### 文件校验和" >> changelog.md
+          echo '```' >> changelog.md
+          cd checksums
+          cat *.sha256 >> ../changelog.md
+          cd ..
+          echo '```' >> changelog.md
+
+      - name: 创建发布压缩包
+        run: |
+          cd artifacts
+          echo "正在创建发布压缩包..."
+          
+          for platform_dir in */; do
+            platform=$(basename "$platform_dir")
+            if [[ $platform == *"Logs"* ]]; then
+              continue
+            fi
+            
+            echo "正在为 $platform 创建压缩包..."
+            zip -r "../${{ env.APP_NAME }}-${platform}.zip" "$platform/"
+            cp "../checksums/${platform}.sha256" "${platform}/"
+            echo "已将校验和添加到 ${platform}"
+          done
+          
+          cd ..
+          echo "创建的压缩包文件:"
+          ls -la *.zip
+
+      - name: 调试信息
+        run: |
+          echo "当前标签: ${{ github.ref }}"
+          echo "当前工作目录: $(pwd)"
+          echo "构建产物目录内容:"
+          ls -la artifacts/
+          echo "压缩包内容:"
+          ls -la *.zip
+          echo "校验和目录内容:"
+          ls -la checksums/
+
+      - name: 创建发布版本
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          name: ${{ env.APP_NAME }} v${{ env.VERSION }}
+          body_path: changelog.md
+          files: |
+            ${{ env.APP_NAME }}-Windows.zip
+            ${{ env.APP_NAME }}-MacOS-ARM64.zip
+            ${{ env.APP_NAME }}-Linux.zip
+            ${{ env.APP_NAME }}-MacOS-Intel.zip
+            checksums/*.sha256
+          draft: false
+          prerelease: ${{ needs.prepare.outputs.is_prerelease == 'true' }}
+
+  cleanup:
+    needs: [build, create-release]
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      actions: write
+    env:
+      PROJECT_DIR: ${{ github.event.inputs.project_dir || 'moemail-auto-deploy' }}
+    steps:
+      - name: 设置中文编码
+        run: |
+          echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV
+          echo "LC_ALL=zh_CN.UTF-8" >> $GITHUB_ENV
+          sudo locale-gen zh_CN.UTF-8 || true
+
+      - name: 删除构建产物
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: |
+            ${{ env.APP_NAME }}-Windows
+            ${{ env.APP_NAME }}-MacOS-ARM64
+            ${{ env.APP_NAME }}-Linux
+            ${{ env.APP_NAME }}-MacOS-Intel
+            ${{ env.APP_NAME }}-Windows-Logs
+            ${{ env.APP_NAME }}-MacOS-ARM64-Logs
+            ${{ env.APP_NAME }}-Linux-Logs
+            ${{ env.APP_NAME }}-MacOS-Intel-Logs
+          failOnError: false
+
+      - name: 清除缓存
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN }}
+        run: |
+          set +e  # 忽略错误
+          
+          # 安装 GitHub CLI
+          if ! command -v gh &> /dev/null; then
+            echo "安装 GitHub CLI..."
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install gh
+          fi
+          
+          # 安装缓存扩展
+          gh extension install actions/gh-actions-cache 2>/dev/null || true
+          
+          REPO=${{ github.repository }}
+          BRANCH=${{ github.ref }}
+          
+          echo "获取缓存列表..."
+          cacheKeys=$(gh actions-cache list --repo $REPO --branch $BRANCH --limit 100 | cut -f 1 2>/dev/null || echo "")
+          
+          if [ -z "$cacheKeys" ]; then
+            echo "没有找到需要清除的缓存"
+            exit 0
+          fi
+          
+          echo "开始清除缓存..."
+          for cacheKey in $cacheKeys; do
+            gh actions-cache delete $cacheKey --repo $REPO --branch $BRANCH --confirm 2>/dev/null || echo "无法删除缓存 $cacheKey"
+            echo "已删除缓存: $cacheKey"
+          done
+          echo "缓存清理完成"

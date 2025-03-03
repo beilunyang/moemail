@@ -1,0 +1,4 @@
+DrissionPage>=4.0.0
+python-dotenv>=1.0.0
+loguru>=0.7.0
+pyinstaller>=5.13.0 
