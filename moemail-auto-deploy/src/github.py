@@ -94,6 +94,7 @@ class Github(Platform):
         secrets_variables_url = f"{url}/settings/secrets/actions"
         tab.get(secrets_variables_url)
         self.add_project_variable(tab, 'CLOUDFLARE_ACCOUNT_ID')
+        self.add_project_variable(tab, 'CLOUDFLARE_API_TOKEN')
         self.add_project_variable(tab, 'DATABASE_NAME')
         self.add_project_variable(tab, 'DATABASE_ID')
         self.add_project_variable(tab, 'KV_NAMESPACE_ID')
