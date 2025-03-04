@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "moemail",
+  "compatibility_date": "2024-03-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": ".vercel/output/static",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "${DATABASE_NAME}",
+      "database_id": "${DATABASE_ID}",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SITE_CONFIG",
+      "id": "${KV_NAMESPACE_ID}"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cleanup-worker",
+  "main": "workers/cleanup.ts",
+  "compatibility_date": "2024-03-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "triggers": {
+    "crons": ["0 * * * *"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "migrations_dir": "drizzle",
+      "database_name": "${DATABASE_NAME}",
+      "database_id": "${DATABASE_ID}"
+    }
+  ]
+}
