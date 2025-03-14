@@ -45,7 +45,10 @@ export function ThreeColumnLayout() {
           </div>
           <div className="flex-1 overflow-auto">
             <EmailList
-              onEmailSelect={setSelectedEmail}
+              onEmailSelect={(email) => {
+                setSelectedEmail(email)
+                setSelectedMessageId(null)
+              }}
               selectedEmailId={selectedEmail?.id}
             />
           </div>
