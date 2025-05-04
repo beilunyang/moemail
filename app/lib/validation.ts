@@ -2,12 +2,12 @@ import { z } from "zod"
 
 export const authSchema = z.object({
   username: z.string()
-    .min(1, "用户名不能为空")
-    .max(20, "用户名不能超过20个字符")
-    .regex(/^[a-zA-Z0-9_-]+$/, "用户名只能包含字母、数字、下划线和横杠")
-    .refine(val => !val.includes('@'), "用户名不能是邮箱格式"),
+    .min(1, "用戶名不能為空")
+    .max(20, "用戶名不能超過20個字符")
+    .regex(/^[a-zA-Z0-9_-]+$/, "用戶名只能包含字母、數字、下劃線和橫槓")
+    .refine(val => !val.includes('@'), "用戶名不能是郵箱格式"),
   password: z.string()
-    .min(8, "密码长度必须大于等于8位")
+    .min(8, "密碼長度必須大於等於8位")
 })
 
 export type AuthSchema = z.infer<typeof authSchema>
