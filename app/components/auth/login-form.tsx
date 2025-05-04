@@ -37,22 +37,22 @@ export function LoginForm() {
 
   const validateLoginForm = () => {
     const newErrors: FormErrors = {}
-    if (!username) newErrors.username = "请输入用户名"
-    if (!password) newErrors.password = "请输入密码"
-    if (username.includes('@')) newErrors.username = "用户名不能包含 @ 符号"
-    if (password && password.length < 8) newErrors.password = "密码长度必须大于等于8位"
+    if (!username) newErrors.username = "請輸入用戶名"
+    if (!password) newErrors.password = "請輸入密碼"
+    if (username.includes('@')) newErrors.username = "用戶名不能包含 @ 符號"
+    if (password && password.length < 8) newErrors.password = "密碼長度必須大於等於8位"
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const validateRegisterForm = () => {
     const newErrors: FormErrors = {}
-    if (!username) newErrors.username = "请输入用户名"
-    if (!password) newErrors.password = "请输入密码"
-    if (username.includes('@')) newErrors.username = "用户名不能包含 @ 符号"
-    if (password && password.length < 8) newErrors.password = "密码长度必须大于等于8位"
-    if (!confirmPassword) newErrors.confirmPassword = "请确认密码"
-    if (password !== confirmPassword) newErrors.confirmPassword = "两次输入的密码不一致"
+    if (!username) newErrors.username = "請輸入用戶名"
+    if (!password) newErrors.password = "請輸入密碼"
+    if (username.includes('@')) newErrors.username = "用戶名不能包含 @ 符號"
+    if (password && password.length < 8) newErrors.password = "密碼長度必須大於等於8位"
+    if (!confirmPassword) newErrors.confirmPassword = "請確認密碼"
+    if (password !== confirmPassword) newErrors.confirmPassword = "兩次輸入的密碼不一致"
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -70,8 +70,8 @@ export function LoginForm() {
 
       if (result?.error) {
         toast({
-          title: "登录失败",
-          description: "用户名或密码错误",
+          title: "登錄失敗",
+          description: "用戶名或密碼錯誤",
           variant: "destructive",
         })
         setLoading(false)
@@ -81,8 +81,8 @@ export function LoginForm() {
       window.location.href = "/"
     } catch (error) {
       toast({
-        title: "登录失败",
-        description: error instanceof Error ? error.message : "请稍后重试",
+        title: "登錄失敗",
+        description: error instanceof Error ? error.message : "請稍後重試",
         variant: "destructive",
       })
       setLoading(false)
@@ -104,15 +104,15 @@ export function LoginForm() {
 
       if (!response.ok) {
         toast({
-          title: "注册失败",
-          description: data.error || "请稍后重试",
+          title: "注冊失敗",
+          description: data.error || "請稍後重試",
           variant: "destructive",
         })
         setLoading(false)
         return
       }
 
-      // 注册成功后自动登录
+      // 注冊成功後自動登錄
       const result = await signIn("credentials", {
         username,
         password,
@@ -121,8 +121,8 @@ export function LoginForm() {
 
       if (result?.error) {
         toast({
-          title: "登录失败",
-          description: "自动登录失败，请手动登录",
+          title: "登錄失敗",
+          description: "自動登錄失敗，請手動登錄",
           variant: "destructive",
         })
         setLoading(false)
@@ -132,8 +132,8 @@ export function LoginForm() {
       window.location.href = "/"
     } catch (error) {
       toast({
-        title: "注册失败",
-        description: error instanceof Error ? error.message : "请稍后重试",
+        title: "注冊失敗",
+        description: error instanceof Error ? error.message : "請稍後重試",
         variant: "destructive",
       })
       setLoading(false)
@@ -155,17 +155,17 @@ export function LoginForm() {
     <Card className="w-[95%] max-w-lg border-2 border-primary/20">
       <CardHeader className="space-y-2">
         <CardTitle className="text-2xl text-center bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-          欢迎使用 MoeMail
+          歡迎使用 MoeMail
         </CardTitle>
         <CardDescription className="text-center">
-          萌萌哒临时邮箱服务 (。・∀・)ノ
+          萌萌噠臨時郵箱服務 (。・∀・)ノ
         </CardDescription>
       </CardHeader>
       <CardContent className="px-6">
         <Tabs defaultValue="login" className="w-full" onValueChange={clearForm}>
           <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="login">登录</TabsTrigger>
-            <TabsTrigger value="register">注册</TabsTrigger>
+            <TabsTrigger value="login">登錄</TabsTrigger>
+            <TabsTrigger value="register">注冊</TabsTrigger>
           </TabsList>
           <div className="min-h-[220px]">
             <TabsContent value="login" className="space-y-4 mt-0">
@@ -180,7 +180,7 @@ export function LoginForm() {
                         "h-9 pl-9 pr-3",
                         errors.username && "border-destructive focus-visible:ring-destructive"
                       )}
-                      placeholder="用户名"
+                      placeholder="用戶名"
                       value={username}
                       onChange={(e) => {
                         setUsername(e.target.value)
@@ -204,7 +204,7 @@ export function LoginForm() {
                         errors.password && "border-destructive focus-visible:ring-destructive"
                       )}
                       type="password"
-                      placeholder="密码"
+                      placeholder="密碼"
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value)
@@ -226,7 +226,7 @@ export function LoginForm() {
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  登录
+                  登錄
                 </Button>
 
                 <div className="relative">
@@ -246,7 +246,7 @@ export function LoginForm() {
                   onClick={handleGithubLogin}
                 >
                   <Github className="mr-2 h-4 w-4" />
-                  使用 GitHub 账号登录
+                  使用 GitHub 賬號登錄
                 </Button>
               </div>
             </TabsContent>
@@ -262,7 +262,7 @@ export function LoginForm() {
                         "h-9 pl-9 pr-3",
                         errors.username && "border-destructive focus-visible:ring-destructive"
                       )}
-                      placeholder="用户名"
+                      placeholder="用戶名"
                       value={username}
                       onChange={(e) => {
                         setUsername(e.target.value)
@@ -286,7 +286,7 @@ export function LoginForm() {
                         errors.password && "border-destructive focus-visible:ring-destructive"
                       )}
                       type="password"
-                      placeholder="密码"
+                      placeholder="密碼"
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value)
@@ -310,7 +310,7 @@ export function LoginForm() {
                         errors.confirmPassword && "border-destructive focus-visible:ring-destructive"
                       )}
                       type="password"
-                      placeholder="确认密码"
+                      placeholder="確認密碼"
                       value={confirmPassword}
                       onChange={(e) => {
                         setConfirmPassword(e.target.value)
@@ -332,7 +332,7 @@ export function LoginForm() {
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  注册
+                  注冊
                 </Button>
               </div>
             </TabsContent>
