@@ -25,25 +25,25 @@ export default async function Home() {
                   </span>
                 </h1>
                 <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 tracking-wide">
-                  萌萌哒临时邮箱服务
+                  萌萌噠臨時郵箱服務
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 px-4 sm:px-0">
                 <FeatureCard
                   icon={<Shield className="w-5 h-5" />}
-                  title="隐私保护"
-                  description="保护您的真实邮箱地址"
+                  title="隱私保護"
+                  description="保護您的真實郵箱地址"
                 />
                 <FeatureCard
                   icon={<Mail className="w-5 h-5" />}
-                  title="即时收件"
-                  description="实时接收邮件通知"
+                  title="即時收件"
+                  description="實時接收郵件通知"
                 />
                 <FeatureCard
                   icon={<Clock className="w-5 h-5" />}
-                  title="自动过期"
-                  description="到期自动失效"
+                  title="自動過期"
+                  description="到期自動失效"
                 />
               </div>
 
