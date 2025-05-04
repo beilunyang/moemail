@@ -11,8 +11,8 @@ interface UseCopyOptions {
 export function useCopy(options: UseCopyOptions = {}) {
   const { toast } = useToast()
   const {
-    successMessage = "已复制到剪贴板",
-    errorMessage = "复制失败"
+    successMessage = "已複製到剪貼板",
+    errorMessage = "複製失敗"
   } = options
 
   const copyToClipboard = useCallback(async (text: string) => {
@@ -25,7 +25,7 @@ export function useCopy(options: UseCopyOptions = {}) {
       return true
     } catch {
       toast({
-        title: "错误",
+        title: "錯誤",
         description: errorMessage,
         variant: "destructive"
       })
