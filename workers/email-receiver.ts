@@ -29,6 +29,7 @@ const handleEmail = async (message: ForwardableEmailMessage, env: Env) => {
       subject: parsedMessage.subject || '(无主题)',
       content: parsedMessage.text || '',
       html: parsedMessage.html || '',
+      type: 'received',
     }).returning().get()
 
     const webhook = await db.query.webhooks.findFirst({

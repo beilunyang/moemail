@@ -1,6 +1,7 @@
-import { Role, ROLES } from "@/lib/permissions"
+import { PERMISSIONS, Role, ROLES } from "@/lib/permissions"
 import { getRequestContext } from "@cloudflare/next-on-pages"
 import { EMAIL_CONFIG } from "@/config"
+import { checkPermission } from "@/lib/auth"
 
 export const runtime = "edge"
 
@@ -22,6 +23,14 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const canAccess = await checkPermission(PERMISSIONS.MANAGE_CONFIG)
+
+  if (!canAccess) {
+    return Response.json({
+      error: "权限不足"
+    }, { status: 403 })
+  }
+
   const { defaultRole, emailDomains, adminContact, maxEmails } = await request.json() as { 
     defaultRole: Exclude<Role, typeof ROLES.EMPEROR>,
     emailDomains: string,

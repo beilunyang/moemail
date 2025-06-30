@@ -4,13 +4,14 @@ import { User } from "next-auth"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { signOut } from "next-auth/react"
-import { Github, Mail, Settings, Crown, Sword, User2, Gem } from "lucide-react"
+import { Github, Settings, Crown, Sword, User2, Gem, Mail } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { WebhookConfig } from "./webhook-config"
 import { PromotePanel } from "./promote-panel"
+import { EmailServiceConfig } from "./email-service-config"
 import { useRolePermission } from "@/hooks/use-role-permission"
 import { PERMISSIONS } from "@/lib/permissions"
-import { ConfigPanel } from "./config-panel"
+import { WebsiteConfigPanel } from "./website-config-panel"
 import { ApiKeyPanel } from "./api-key-panel"
 
 interface ProfileCardProps {
@@ -96,7 +97,8 @@ export function ProfileCard({ user }: ProfileCardProps) {
         </div>
       )}
 
-      {canManageConfig && <ConfigPanel />}
+      {canManageConfig && <WebsiteConfigPanel />}
+      {canManageConfig && <EmailServiceConfig />}
       {canPromote && <PromotePanel />}
       {canManageWebhook && <ApiKeyPanel />}
 

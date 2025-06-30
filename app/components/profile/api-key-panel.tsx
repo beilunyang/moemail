@@ -319,6 +319,26 @@ export function ApiKeyPanel() {
                     <div className="rounded-lg border bg-card p-4 space-y-4">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
+                          <div className="text-sm font-medium">获取系统配置</div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => copyToClipboard(
+                              `curl ${window.location.protocol}//${window.location.host}/api/config \\
+  -H "X-API-Key: YOUR_API_KEY"`
+                            )}
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <pre className="text-xs bg-muted/50 rounded-lg p-4 overflow-x-auto">
+                          {`curl ${window.location.protocol}//${window.location.host}/api/config \\
+  -H "X-API-Key: YOUR_API_KEY"`}
+                        </pre>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
                           <div className="text-sm font-medium">生成临时邮箱</div>
                           <Button
                             variant="ghost"
@@ -413,10 +433,11 @@ export function ApiKeyPanel() {
                         <p>注意：</p>
                         <ul className="list-disc list-inside space-y-1 mt-2">
                           <li>请将 YOUR_API_KEY 替换为你的实际 API Key</li>
+                          <li>/api/config 接口可获取系统配置，包括可用的邮箱域名列表</li>
                           <li>emailId 是邮箱的唯一标识符</li>
                           <li>messageId 是邮件的唯一标识符</li>
                           <li>expiryTime 是邮箱的有效期（毫秒），可选值：3600000（1小时）、86400000（1天）、604800000（7天）、0（永久）</li>
-                          <li>domain 是邮箱域名，可通过 /api/emails/domains 获取可用域名列表</li>
+                          <li>domain 是邮箱域名，可通过 /api/config 接口获取可用域名列表</li>
                           <li>cursor 用于分页，从上一次请求的响应中获取 nextCursor</li>
                           <li>所有请求都需要包含 X-API-Key 请求头</li>
                         </ul>
