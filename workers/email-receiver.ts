@@ -72,4 +72,4 @@ const worker = {
   }
 }
 
-export default worker 
+export default worker

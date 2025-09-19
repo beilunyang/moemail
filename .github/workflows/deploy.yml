@@ -3,7 +3,9 @@ name: Deploy
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
+    branches:
+      - "xiyang-icon-modification"
   workflow_dispatch:
 
 jobs:
@@ -12,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Get full git history for checking file changes
+          fetch-depth: 0 # Get full git history for checking file changes
 
       - name: Get previous tag
         id: previoustag
@@ -29,8 +31,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile

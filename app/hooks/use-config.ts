@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import { create } from "zustand"
-import { Role, ROLES } from "@/lib/permissions"
-import { EMAIL_CONFIG } from "@/config"
-import { useEffect } from "react"
+import { create } from "zustand";
+import { Role, ROLES } from "@/lib/permissions";
+import { EMAIL_CONFIG } from "@/config";
+import { useEffect } from "react";
 
 interface Config {
-  defaultRole: Exclude<Role, typeof ROLES.EMPEROR>
-  emailDomains: string
-  emailDomainsArray: string[]
-  adminContact: string
-  maxEmails: number
+  defaultRole: Exclude<Role, typeof ROLES.EMPEROR>;
+  emailDomains: string;
+  emailDomainsArray: string[];
+  adminContact: string;
+  maxEmails: number;
 }
 
 interface ConfigStore {
-  config: Config | null
-  loading: boolean
-  error: string | null
-  fetch: () => Promise<void>
+  config: Config | null;
+  loading: boolean;
+  error: string | null;
+  fetch: () => Promise<void>;
 }
 
 const useConfigStore = create<ConfigStore>((set) => ({
@@ -26,37 +26,37 @@ const useConfigStore = create<ConfigStore>((set) => ({
   error: null,
   fetch: async () => {
     try {
-      set({ loading: true, error: null })
-      const res = await fetch("/api/config")
-      if (!res.ok) throw new Error("获取配置失败")
-      const data = await res.json() as Config
+      set({ loading: true, error: null });
+      const res = await fetch("/api/config");
+      if (!res.ok) throw new Error("获取配置失败");
+      const data = (await res.json()) as Config;
       set({
         config: {
           defaultRole: data.defaultRole || ROLES.CIVILIAN,
           emailDomains: data.emailDomains,
-          emailDomainsArray: data.emailDomains.split(','),
+          emailDomainsArray: data.emailDomains.split(","),
           adminContact: data.adminContact || "",
-          maxEmails: Number(data.maxEmails) || EMAIL_CONFIG.MAX_ACTIVE_EMAILS
+          maxEmails: Number(data.maxEmails) || EMAIL_CONFIG.MAX_ACTIVE_EMAILS,
         },
-        loading: false
-      })
+        loading: false,
+      });
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : "获取配置失败",
-        loading: false 
-      })
+        loading: false,
+      });
     }
-  }
-}))
+  },
+}));
 
 export function useConfig() {
-  const store = useConfigStore()
+  const { config, loading, fetch: fetchConfig, ...rest } = useConfigStore();
 
   useEffect(() => {
-    if (!store.config && !store.loading) {
-      store.fetch()
+    if (!config && !loading) {
+      fetchConfig();
     }
-  }, [store.config, store.loading])
+  }, [config, loading, fetchConfig]);
 
-  return store
-} 
+  return { config, loading, fetch: fetchConfig, ...rest };
+}

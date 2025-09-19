@@ -1,39 +1,39 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { useToast } from "@/components/ui/use-toast"
-import { Loader2, Send, ChevronDown, ChevronUp } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2, Send, ChevronDown, ChevronUp } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
 
 export function WebhookConfig() {
-  const [enabled, setEnabled] = useState(false)
-  const [url, setUrl] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [testing, setTesting] = useState(false)
-  const [showDocs, setShowDocs] = useState(false)
-  const [initialLoading, setInitialLoading] = useState(true)
-  const { toast } = useToast()
+  const [enabled, setEnabled] = useState(false);
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [showDocs, setShowDocs] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetch("/api/webhook")
-      .then(res => res.json() as Promise<{ enabled: boolean; url: string }>)
-      .then(data => {
-        setEnabled(data.enabled)
-        setUrl(data.url)
+      .then((res) => res.json() as Promise<{ enabled: boolean; url: string }>)
+      .then((data) => {
+        setEnabled(data.enabled);
+        setUrl(data.url);
       })
       .catch(console.error)
-      .finally(() => setInitialLoading(false))
-  }, [])
+      .finally(() => setInitialLoading(false));
+  }, []);
 
   if (initialLoading) {
     return (
@@ -45,65 +45,65 @@ export function WebhookConfig() {
           <p className="text-sm text-muted-foreground">加载中...</p>
         </div>
       </div>
-    )
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!url) return
+    e.preventDefault();
+    if (!url) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
       const res = await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, enabled })
-      })
+        body: JSON.stringify({ url, enabled }),
+      });
 
-      if (!res.ok) throw new Error("Failed to save")
+      if (!res.ok) throw new Error("Failed to save");
 
       toast({
         title: "保存成功",
-        description: "Webhook 配置已更新"
-      })
+        description: "Webhook 配置已更新",
+      });
     } catch (_error) {
       toast({
         title: "保存失败",
         description: "请稍后重试",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleTest = async () => {
-    if (!url) return
+    if (!url) return;
 
-    setTesting(true)
+    setTesting(true);
     try {
       const res = await fetch("/api/webhook/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
-      })
+        body: JSON.stringify({ url }),
+      });
 
-      if (!res.ok) throw new Error("测试失败")
+      if (!res.ok) throw new Error("测试失败");
 
       toast({
         title: "测试成功",
-        description: "Webhook 调用成功,请检查目标服务器是否收到请求"
-      })
+        description: "Webhook 调用成功,请检查目标服务器是否收到请求",
+      });
     } catch (_error) {
       toast({
         title: "测试失败",
         description: "请检查 URL 是否正确且可访问",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     } finally {
-      setTesting(false)
+      setTesting(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -116,7 +116,31 @@ export function WebhookConfig() {
         </div>
         <Switch
           checked={enabled}
-          onCheckedChange={setEnabled}
+          onCheckedChange={async (v) => {
+            setEnabled(v);
+            setLoading(true);
+            try {
+              const res = await fetch("/api/webhook", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url, enabled: v }),
+              });
+              if (!res.ok) throw new Error("Failed to save");
+              toast({
+                title: v ? "已开启 Webhook" : "已关闭 Webhook",
+                description: "配置已保存",
+              });
+            } catch (_e) {
+              setEnabled(!v);
+              toast({
+                title: "保存失败",
+                description: "请稍后重试",
+                variant: "destructive",
+              });
+            } finally {
+              setLoading(false);
+            }
+          }}
         />
       </div>
 
@@ -133,7 +157,11 @@ export function WebhookConfig() {
                 type="url"
                 required
               />
-              <Button type="submit" disabled={loading} className="flex-shrink-0">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex-shrink-0"
+              >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
@@ -173,15 +201,21 @@ export function WebhookConfig() {
               className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setShowDocs(!showDocs)}
             >
-              {showDocs ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {showDocs ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
               查看数据格式说明
             </button>
 
             {showDocs && (
               <div className="rounded-md bg-muted p-4 text-sm space-y-3">
-                <p>当收到新邮件时，我们会向配置的 URL 发送 POST 请求，请求头包含:</p>
+                <p>
+                  当收到新邮件时，我们会向配置的 URL 发送 POST 请求，请求头包含:
+                </p>
                 <pre className="bg-background p-2 rounded text-xs">
-                  Content-Type: application/json{'\n'}
+                  Content-Type: application/json{"\n"}
                   X-Webhook-Event: new_message
                 </pre>
 
@@ -204,5 +238,5 @@ export function WebhookConfig() {
         </div>
       )}
     </form>
-  )
-} 
+  );
+}

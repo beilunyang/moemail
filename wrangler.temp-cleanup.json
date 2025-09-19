@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "temp-account-cleanup",
+  "main": "workers/temp-account-cleanup.ts",
+  "compatibility_date": "2024-11-29",
+  "vars": {
+    "SITE_URL": "https://xiyangone.online"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "triggers": {
+    "crons": [
+      "*/30 * * * *"
+    ]
+  },
+  "routes": [],
+  "placement": {
+    "mode": "smart"
+  }
+}

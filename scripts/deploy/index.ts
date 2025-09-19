@@ -93,15 +93,15 @@ const setupWranglerConfigs = () => {
   const configs = [
     { example: "wrangler.example.json", target: "wrangler.json" },
     { example: "wrangler.email.example.json", target: "wrangler.email.json" },
-    { example: "wrangler.cleanup.example.json", target: "wrangler.cleanup.json" },
+    {
+      example: "wrangler.cleanup.example.json",
+      target: "wrangler.cleanup.json",
+    },
   ];
 
   // 处理每个配置文件
   for (const config of configs) {
-    setupConfigFile(
-      resolve(config.example),
-      resolve(config.target)
-    );
+    setupConfigFile(resolve(config.example), resolve(config.target));
   }
 };
 
@@ -117,11 +117,11 @@ const updateDatabaseConfig = (dbId: string) => {
     "wrangler.email.json",
     "wrangler.cleanup.json",
   ];
-  
+
   for (const filename of configFiles) {
     const configPath = resolve(filename);
     if (!existsSync(configPath)) continue;
-    
+
     try {
       const json = JSON.parse(readFileSync(configPath, "utf-8"));
       if (json.d1_databases && json.d1_databases.length > 0) {
@@ -139,8 +139,10 @@ const updateDatabaseConfig = (dbId: string) => {
  * 更新KV命名空间ID到所有配置文件
  */
 const updateKVConfig = (namespaceId: string) => {
-  console.log(`📝 Updating KV namespace ID (${namespaceId}) in configurations...`);
-  
+  console.log(
+    `📝 Updating KV namespace ID (${namespaceId}) in configurations...`
+  );
+
   // KV命名空间只在主wrangler.json中使用
   const wranglerPath = resolve("wrangler.json");
   if (existsSync(wranglerPath)) {
@@ -165,25 +167,29 @@ const checkAndCreateDatabase = async () => {
 
   try {
     const database = await getDatabase();
-    
+
     if (!database || !database.uuid) {
-      throw new Error('Database object is missing a valid UUID');
+      throw new Error("Database object is missing a valid UUID");
     }
-    
+
     updateDatabaseConfig(database.uuid);
-    console.log(`✅ Database "${DATABASE_NAME}" already exists (ID: ${database.uuid})`);
+    console.log(
+      `✅ Database "${DATABASE_NAME}" already exists (ID: ${database.uuid})`
+    );
   } catch (error) {
     if (error instanceof NotFoundError) {
       console.log(`⚠️ Database not found, creating new database...`);
       try {
         const database = await createDatabase();
-        
+
         if (!database || !database.uuid) {
-          throw new Error('Database object is missing a valid UUID');
+          throw new Error("Database object is missing a valid UUID");
         }
-        
+
         updateDatabaseConfig(database.uuid);
-        console.log(`✅ Database "${DATABASE_NAME}" created successfully (ID: ${database.uuid})`);
+        console.log(
+          `✅ Database "${DATABASE_NAME}" created successfully (ID: ${database.uuid})`
+        );
       } catch (createError) {
         console.error(`❌ Failed to create database:`, createError);
         throw createError;
@@ -225,19 +231,28 @@ const checkAndCreateKVNamespace = async () => {
     let namespace;
 
     const namespaceList = await getKVNamespaceList();
-    namespace = namespaceList.find(ns => ns.title === KV_NAMESPACE_NAME);
+    namespace = namespaceList.find((ns) => ns.title === KV_NAMESPACE_NAME);
 
     if (namespace && namespace.id) {
       updateKVConfig(namespace.id);
-      console.log(`✅ KV namespace "${KV_NAMESPACE_NAME}" found by name (ID: ${namespace.id})`);
+      console.log(
+        `✅ KV namespace "${KV_NAMESPACE_NAME}" found by name (ID: ${namespace.id})`
+      );
     } else {
-      console.log("⚠️ KV namespace not found by name, creating new KV namespace...");
+      console.log(
+        "⚠️ KV namespace not found by name, creating new KV namespace..."
+      );
       namespace = await createKVNamespace();
       updateKVConfig(namespace.id);
-      console.log(`✅ KV namespace "${KV_NAMESPACE_NAME}" created successfully (ID: ${namespace.id})`);
+      console.log(
+        `✅ KV namespace "${KV_NAMESPACE_NAME}" created successfully (ID: ${namespace.id})`
+      );
     }
   } catch (error) {
-    console.error(`❌ An error occurred while checking the KV namespace:`, error);
+    console.error(
+      `❌ An error occurred while checking the KV namespace:`,
+      error
+    );
     throw error;
   }
 };
@@ -259,7 +274,7 @@ const checkAndCreatePages = async () => {
       if (!CUSTOM_DOMAIN && pages.subdomain) {
         console.log("⚠️ CUSTOM_DOMAIN is empty, using pages default domain...");
         console.log("📝 Updating environment variables...");
-        
+
         // 更新环境变量为默认的Pages域名
         const appUrl = `https://${pages.subdomain}`;
         updateEnvVar("CUSTOM_DOMAIN", appUrl);
@@ -278,53 +293,75 @@ const pushPagesSecret = () => {
   console.log("🔐 Pushing environment secrets to Pages...");
 
   // 定义运行时所需的环境变量列表
-  const runtimeEnvVars = ['AUTH_GITHUB_ID', 'AUTH_GITHUB_SECRET', 'AUTH_SECRET'];
+  const runtimeEnvVars = [
+    "AUTH_GITHUB_ID",
+    "AUTH_GITHUB_SECRET",
+    "AUTH_SECRET",
+  ];
 
-  // 兼容老的部署方式，如果这些环境变量不存在，则说明是老的部署方式，跳过推送
-  for (const varName of runtimeEnvVars) {
-    if (!process.env[varName]) {
-      console.log(`🔐 Skipping pushing secrets to Pages...`);
-      return;
-    }
+  // 检查是否有任何运行时环境变量存在
+  const hasAnyRuntimeVar = runtimeEnvVars.some(
+    (varName) => process.env[varName]
+  );
+
+  if (!hasAnyRuntimeVar) {
+    console.log(
+      `🔐 No runtime environment variables found, skipping pushing secrets to Pages...`
+    );
+    return;
   }
-  
+
+  // 检查必需的 AUTH_SECRET
+  if (!process.env.AUTH_SECRET) {
+    console.log(
+      `🔐 AUTH_SECRET is required but not found, skipping pushing secrets to Pages...`
+    );
+    return;
+  }
+
   try {
     // 确保.env文件存在
-    if (!existsSync(resolve('.env'))) {
+    if (!existsSync(resolve(".env"))) {
       setupEnvFile();
     }
-    
+
     // 创建一个临时文件，只包含运行时所需的环境变量
-    const envContent = readFileSync(resolve('.env'), 'utf-8');
-    const runtimeEnvFile = resolve('.env.runtime');
-    
+    const envContent = readFileSync(resolve(".env"), "utf-8");
+    const runtimeEnvFile = resolve(".env.runtime");
+
     // 从.env文件中提取运行时变量
     const runtimeEnvContent = envContent
-      .split('\n')
-      .filter(line => {
+      .split("\n")
+      .filter((line) => {
         const trimmedLine = line.trim();
         // 跳过注释和空行
-        if (!trimmedLine || trimmedLine.startsWith('#')) return false;
-        
-        // 检查是否为运行时所需的环境变量
+        if (!trimmedLine || trimmedLine.startsWith("#")) return false;
+
+        // 检查是否为运行时所需的环境变量，且该变量在process.env中存在
         for (const varName of runtimeEnvVars) {
-          if (line.startsWith(`${varName} =`) || line.startsWith(`${varName}=`)) {
+          if (
+            (line.startsWith(`${varName} =`) ||
+              line.startsWith(`${varName}=`)) &&
+            process.env[varName] // 只包含实际存在的环境变量
+          ) {
             return true;
           }
         }
         return false;
       })
-      .join('\n');
-    
+      .join("\n");
+
     // 写入临时文件
     writeFileSync(runtimeEnvFile, runtimeEnvContent);
-    
+
     // 使用临时文件推送secrets
-    execSync(`pnpm dlx wrangler pages secret bulk ${runtimeEnvFile}`, { stdio: "inherit" });
-    
+    execSync(`pnpm dlx wrangler pages secret bulk ${runtimeEnvFile}`, {
+      stdio: "inherit",
+    });
+
     // 清理临时文件
     execSync(`rm ${runtimeEnvFile}`, { stdio: "inherit" });
-    
+
     console.log("✅ Secrets pushed successfully");
   } catch (error) {
     console.error("❌ Failed to push secrets:", error);
@@ -352,7 +389,9 @@ const deployPages = () => {
 const deployEmailWorker = () => {
   console.log("🚧 Deploying Email Worker...");
   try {
-    execSync("pnpm dlx wrangler deploy --config wrangler.email.json", { stdio: "inherit" });
+    execSync("pnpm dlx wrangler deploy --config wrangler.email.json", {
+      stdio: "inherit",
+    });
     console.log("✅ Email Worker deployed successfully");
   } catch (error) {
     console.error("❌ Email Worker deployment failed:", error);
@@ -366,7 +405,9 @@ const deployEmailWorker = () => {
 const deployCleanupWorker = () => {
   console.log("🚧 Deploying Cleanup Worker...");
   try {
-    execSync("pnpm dlx wrangler deploy --config wrangler.cleanup.json", { stdio: "inherit" });
+    execSync("pnpm dlx wrangler deploy --config wrangler.cleanup.json", {
+      stdio: "inherit",
+    });
     console.log("✅ Cleanup Worker deployed successfully");
   } catch (error) {
     console.error("❌ Cleanup Worker deployment failed:", error);
@@ -381,14 +422,14 @@ const setupEnvFile = () => {
   console.log("📄 Setting up environment file...");
   const envFilePath = resolve(".env");
   const envExamplePath = resolve(".env.example");
-  
+
   // 如果.env文件不存在，则从.env.example复制创建
   if (!existsSync(envFilePath) && existsSync(envExamplePath)) {
     console.log("⚠️ .env file does not exist, creating from example...");
-    
+
     // 从示例文件复制
     let envContent = readFileSync(envExamplePath, "utf-8");
-    
+
     // 填充当前的环境变量
     const envVarMatches = envContent.match(/^([A-Z_]+)\s*=\s*".*?"/gm);
     if (envVarMatches) {
@@ -396,11 +437,14 @@ const setupEnvFile = () => {
         const varName = match.split("=")[0].trim();
         if (process.env[varName]) {
           const regex = new RegExp(`${varName}\\s*=\\s*".*?"`, "g");
-          envContent = envContent.replace(regex, `${varName} = "${process.env[varName]}"`);
+          envContent = envContent.replace(
+            regex,
+            `${varName} = "${process.env[varName]}"`
+          );
         }
       }
     }
-    
+
     writeFileSync(envFilePath, envContent);
     console.log("✅ .env file created from example");
   } else if (existsSync(envFilePath)) {
@@ -417,22 +461,22 @@ const setupEnvFile = () => {
 const updateEnvVar = (name: string, value: string) => {
   // 首先更新进程环境变量
   process.env[name] = value;
-  
+
   // 然后尝试更新.env文件
   const envFilePath = resolve(".env");
   if (!existsSync(envFilePath)) {
     setupEnvFile();
   }
-  
+
   let envContent = readFileSync(envFilePath, "utf-8");
   const regex = new RegExp(`^${name}\\s*=\\s*".*?"`, "m");
-  
+
   if (envContent.match(regex)) {
     envContent = envContent.replace(regex, `${name} = "${value}"`);
   } else {
     envContent += `\n${name} = "${value}"`;
   }
-  
+
   writeFileSync(envFilePath, envContent);
   console.log(`✅ Updated ${name} in .env file`);
 };

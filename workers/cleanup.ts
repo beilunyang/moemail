@@ -5,10 +5,10 @@ interface Env {
 const CLEANUP_CONFIG = {
   // Whether to delete expired emails
   DELETE_EXPIRED_EMAILS: true,
-  
+
   // Batch processing size
   BATCH_SIZE: 100,
-} as const 
+} as const
 
 const main = {
   async scheduled(_: ScheduledEvent, env: Env) {
@@ -22,7 +22,7 @@ const main = {
 
       const result = await env.DB
         .prepare(`
-          DELETE FROM email 
+          DELETE FROM email
           WHERE expires_at < ?
           LIMIT ?
         `)
@@ -30,7 +30,7 @@ const main = {
         .run()
 
       if (result.success) {
-        console.log(`Deleted ${result?.meta?.changes ?? 0} expired emails and their associated messages`)
+        console.log(`Deleted ${result?.meta?.changes ?? 0} expired emails and their associated messages`)      
       } else {
         console.error('Failed to delete expired emails')
       }
