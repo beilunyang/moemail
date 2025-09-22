@@ -106,6 +106,7 @@ export default function CardKeysPage() {
   // 状态 + 搜索 组合筛选
   useEffect(() => {
     const now = new Date();
+    const twentyFourHoursLater = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     let result = cardKeys;
     if (selectedStatus === "unused") {
       result = result.filter(
@@ -113,8 +114,12 @@ export default function CardKeysPage() {
       );
     } else if (selectedStatus === "used") {
       result = result.filter((key) => key.isUsed);
-    } else if (selectedStatus === "expired") {
-      result = result.filter((key) => new Date(key.expiresAt) <= now);
+    } else if (selectedStatus === "expiring") {
+      // 筛选24小时内即将过期的卡密（未过期但快过期）
+      result = result.filter((key) => {
+        const expiresAt = new Date(key.expiresAt);
+        return expiresAt > now && expiresAt <= twentyFourHoursLater;
+      });
     }
 
     const q = search.trim().toLowerCase();
@@ -369,12 +374,19 @@ export default function CardKeysPage() {
                 <TabsTrigger value="used">
                   已使用 ({cardKeys.filter((key) => key.isUsed).length})
                 </TabsTrigger>
-                <TabsTrigger value="expired">
-                  已过期 (
+                <TabsTrigger value="expiring">
+                  快过期 (
                   {
-                    cardKeys.filter(
-                      (key) => new Date(key.expiresAt) <= new Date()
-                    ).length
+                    cardKeys.filter((key) => {
+                      const now = new Date();
+                      const twentyFourHoursLater = new Date(
+                        now.getTime() + 24 * 60 * 60 * 1000
+                      );
+                      const expiresAt = new Date(key.expiresAt);
+                      return (
+                        expiresAt > now && expiresAt <= twentyFourHoursLater
+                      );
+                    }).length
                   }
                   )
                 </TabsTrigger>
@@ -459,10 +471,25 @@ export default function CardKeysPage() {
                     <div className="flex items-center gap-2">
                       {(() => {
                         const now = new Date();
-                        const isExpired = new Date(cardKey.expiresAt) <= now;
+                        const expiresAt = new Date(cardKey.expiresAt);
+                        const twentyFourHoursLater = new Date(
+                          now.getTime() + 24 * 60 * 60 * 1000
+                        );
+                        const isExpired = expiresAt <= now;
+                        const isExpiring =
+                          expiresAt > now && expiresAt <= twentyFourHoursLater;
 
                         if (isExpired) {
                           return <Badge variant="destructive">已过期</Badge>;
+                        } else if (isExpiring) {
+                          return (
+                            <Badge
+                              variant="outline"
+                              className="border-orange-500 text-orange-600"
+                            >
+                              快过期
+                            </Badge>
+                          );
                         } else if (cardKey.isUsed) {
                           return <Badge variant="secondary">已使用</Badge>;
                         } else {
