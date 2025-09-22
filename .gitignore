@@ -50,4 +50,8 @@ public/sw.js
 
 wrangler.json
 wrangler.cleanup.json
+
+# lockfiles (pnpm project)
+package-lock.json
+
 wrangler.email.json
