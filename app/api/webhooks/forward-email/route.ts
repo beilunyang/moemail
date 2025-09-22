@@ -37,8 +37,7 @@ export async function POST(request: NextRequest) {
       attachmentCount: payload.attachments?.length || 0,
     });
 
-    const { to, from, subject, text, html, attachments, messageId, date } =
-      payload;
+    const { to, from, subject, text, html, date } = payload;
 
     // 验证必要字段
     if (!to || !from) {
@@ -50,13 +49,25 @@ export async function POST(request: NextRequest) {
     }
 
     // 查找对应的邮箱记录
-    const db = createDb();
-    const email = await db.query.emails.findFirst({
-      where: eq(emails.address, to),
-      with: {
-        user: true,
-      },
-    });
+    let db, email;
+    try {
+      db = createDb();
+      email = await db.query.emails.findFirst({
+        where: eq(emails.address, to),
+        with: {
+          user: true,
+        },
+      });
+    } catch (dbError) {
+      console.error("[WEBHOOK] Database connection error:", dbError);
+      return NextResponse.json(
+        {
+          error: "Database connection failed",
+          details: "This might be expected in development environment",
+        },
+        { status: 503 }
+      );
+    }
 
     if (!email) {
       console.warn("[WEBHOOK] Email address not found in system:", to);
