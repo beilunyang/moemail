@@ -144,6 +144,19 @@ export const messageShares = sqliteTable('message_share', {
   tokenIdx: index('message_share_token_idx').on(table.token),
 }));
 
+// * --- 新增：邮箱域名表 --- *
+// * 用于存储可用的邮箱域名及对应的 Resend 配置 *
+export const emailDomains = sqliteTable('email_domain', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  domain: text('domain').notNull().unique(), // 域名
+  resendApiKey: text('resend_api_key'), // 该域名对应的 Resend API Key
+  resendEnabled: integer('resend_enabled', { mode: 'boolean' }).notNull().default(false), // 是否为此域名启用 Resend
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+}, (table) => ({
+  domainIdx: index('email_domain_domain_idx').on(table.domain),
+}));
 
 
 export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
@@ -185,4 +198,10 @@ export const messageSharesRelations = relations(messageShares, ({ one }) => ({
     fields: [messageShares.messageId],
     references: [messages.id],
   }),
+}));
+
+// * --- 新增：邮箱域名关系 --- *
+// * (目前没有关系，但为将来扩展保留) *
+export const emailDomainsRelations = relations(emailDomains, () => ({
+  // 可以在此处定义与其他表的关系
 }));

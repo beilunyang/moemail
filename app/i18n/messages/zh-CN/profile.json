@@ -61,9 +61,7 @@
     "fixedRoleLimits": "固定权限规则",
     "emperorLimit": "皇帝可以无限发件，不受任何限制",
     "civilianLimit": "永远不能发件",
-    "enableDescription": "开启后将使用 Resend 发送邮件",
-    "apiKey": "Resend API Key",
-    "apiKeyPlaceholder": "输入 Resend API Key",
+    "enableDescription": "开启后将使用 Resend 发送邮件（需在域名管理中单独配置）",
     "dailyLimit": "每日限额",
     "roleLimits": "允许使用发件功能的角色",
     "save": "保存配置",
@@ -102,8 +100,7 @@
     "title": "网站配置",
     "description": "配置网站设置（仅皇帝可用）",
     "defaultRole": "新用户默认角色",
-    "emailDomains": "邮箱域名",
-    "emailDomainsPlaceholder": "多个域名用逗号分隔",
+    "domainManagement": "邮箱域名管理",
     "adminContact": "管理员联系方式",
     "adminContactPlaceholder": "邮箱或其他联系方式",
     "maxEmails": "每个用户最大邮箱数",
@@ -111,6 +108,33 @@
     "saving": "保存中...",
     "saveSuccess": "配置保存成功",
     "saveFailed": "保存配置失败"
+  },
+  "domainManagement": {
+    "title": "邮箱域名管理",
+    "description": "添加、编辑或删除可用的邮箱域名，并配置 Resend 服务。",
+    "domain": "域名",
+    "resendStatus": "Resend 状态",
+    "resendApiKey": "Resend API Key",
+    "resendApiKeyPlaceholder": "输入 Resend API Key (例如 re_...)",
+    "enableResend": "启用 Resend",
+    "resendEnabled": "已启用",
+    "resendDisabled": "未启用",
+    "actions": "操作",
+    "addDomain": "添加域名",
+    "editDomain": "编辑域名",
+    "deleteDomain": "删除域名",
+    "deleteConfirm": "确认删除",
+    "deleteDescription": "确定要删除域名 {domain} 吗？此操作不可恢复。",
+    "noDomains": "暂无域名配置",
+    "loadFailed": "加载域名失败",
+    "saveSuccess": "域名保存成功",
+    "saveFailed": "保存域名失败",
+    "addSuccess": "域名添加成功",
+    "addFailed": "添加域名失败",
+    "updateSuccess": "域名更新成功",
+    "updateFailed": "更新域名失败",
+    "deleteSuccess": "域名删除成功",
+    "deleteFailed": "删除域名失败"
   },
   "promote": {
     "title": "角色管理",
@@ -120,7 +144,7 @@
     "username": "用户名",
     "email": "邮箱",
     "role": "角色",
-    "actions": "操作",
+    "actions": "Actions",
     "promote": "设为",
     "noUsers": "未找到用户",
     "loading": "加载中...",
@@ -128,4 +152,3 @@
     "updateFailed": "更新用户角色失败"
   }
 }
-

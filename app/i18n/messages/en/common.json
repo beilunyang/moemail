@@ -11,7 +11,10 @@
     "ok": "OK",
     "cancel": "Cancel",
     "save": "Save",
-    "delete": "Delete"
+    "delete": "Delete",
+    "manage": "Manage",
+    "add": "Add",
+    "edit": "Edit"
   },
   "nav": {
     "home": "Home",
@@ -22,5 +25,3 @@
   },
   "github": "Get Source Code"
 }
-
-

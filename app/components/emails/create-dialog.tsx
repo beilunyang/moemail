@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react" // * 修复：导入 useCallback *
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,19 +13,32 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { EXPIRY_OPTIONS } from "@/types/email"
 import { useCopy } from "@/hooks/use-copy"
-import { useConfig } from "@/hooks/use-config"
+// * 修复：移除了不再使用的 useConfig *
+// import { useConfig } from "@/hooks/use-config" 
+
+// * 修复：添加 EmailDomain 接口定义，用于从 API 获取数据 *
+interface EmailDomain {
+  id: string
+  domain: string
+  resendEnabled: boolean
+}
 
 interface CreateDialogProps {
   onEmailCreated: () => void
 }
 
 export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
-  const { config } = useConfig()
+  // * 修复：移除了 useConfig *
+  // const { config } = useConfig() 
   const t = useTranslations("emails.create")
   const tList = useTranslations("emails.list")
   const tCommon = useTranslations("common.actions")
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  
+  // * 修复：添加 domains 状态，用于存储从 API 获取的域名列表 *
+  const [domains, setDomains] = useState<EmailDomain[]>([])
+  
   const [emailName, setEmailName] = useState("")
   const [currentDomain, setCurrentDomain] = useState("")
   const [expiryTime, setExpiryTime] = useState(EXPIRY_OPTIONS[1].value.toString())
@@ -37,12 +50,38 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
   const copyEmailAddress = () => {
     copyToClipboard(`${emailName}@${currentDomain}`)
   }
+  
+  // * 修复：添加从 /api/config/email-domains 获取域名的函数 *
+  const fetchDomains = useCallback(async () => {
+    try {
+      const res = await fetch("/api/config/email-domains")
+      if (!res.ok) throw new Error(t("loadFailed")) // 借用一下翻译
+      const data = await res.json() as EmailDomain[]
+      setDomains(data)
+    } catch (error) {
+      toast({
+        title: tList("error"),
+        description: error instanceof Error ? error.message : t("loadFailed"),
+        variant: "destructive",
+      })
+    }
+  }, [t, tList, toast]) // 添加依赖
 
   const createEmail = async () => {
     if (!emailName.trim()) {
       toast({
         title: tList("error"),
         description: t("namePlaceholder"),
+        variant: "destructive"
+      })
+      return
+    }
+    
+    // * 修复：检查是否存在可用域名 *
+    if (!currentDomain) {
+      toast({
+        title: tList("error"),
+        description: t("noDomainAvailable"), // 你可能需要在翻译文件中添加 "noDomainAvailable": "没有可用的域名"
         variant: "destructive"
       })
       return
@@ -88,11 +127,26 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
     }
   }
 
+  // * 修复：当弹窗打开时，加载域名列表 *
   useEffect(() => {
-    if ((config?.emailDomainsArray?.length ?? 0) > 0) {
-      setCurrentDomain(config?.emailDomainsArray[0] ?? "")
+    if (open) {
+      fetchDomains()
     }
-  }, [config])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]) // * 修复：移除 fetchDomains 依赖，防止弹窗打开时无限循环请求 *
+
+  // * 修复：当域名列表加载或变化时，设置默认域名 *
+  useEffect(() => {
+    if (domains.length > 0) {
+      // 检查当前选中的域名是否还在列表中，如果不在了，就设置回第一个
+      const currentDomainStillExists = domains.some(d => d.domain === currentDomain)
+      if (!currentDomainStillExists) {
+        setCurrentDomain(domains[0].domain)
+      }
+    } else {
+      setCurrentDomain("") // 如果没有域名，则清空
+    }
+  }, [domains, currentDomain])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -114,18 +168,27 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
               placeholder={t("namePlaceholder")}
               className="flex-1"
             />
-            {(config?.emailDomainsArray?.length ?? 0) > 1 && (
+            
+            {/* 修复：使用新的 domains 状态来渲染下拉框 */}
+            {domains.length > 1 && (
               <Select value={currentDomain} onValueChange={setCurrentDomain}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {config?.emailDomainsArray?.map(d => (
-                    <SelectItem key={d} value={d}>@{d}</SelectItem>
+                  {domains.map(d => (
+                    <SelectItem key={d.id} value={d.domain}>@{d.domain}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             )}
+            {/* 修复：如果只有一个域名，显示为纯文本 */}
+            {domains.length === 1 && (
+              <div className="flex items-center justify-center px-3 border rounded-md bg-muted text-muted-foreground text-sm">
+                @{currentDomain}
+              </div>
+            )}
+            
             <Button
               variant="outline"
               size="icon"
@@ -159,7 +222,8 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="shrink-0">{t("domain")}:</span>
-            {emailName ? (
+            {/* 修复：确保 currentDomain 有值时才显示 */}
+            {emailName && currentDomain ? (
               <div className="flex items-center gap-2 min-w-0">
                 <span className="truncate">{`${emailName}@${currentDomain}`}</span>
                 <div
@@ -178,11 +242,11 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
           <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
             {tCommon("cancel")}
           </Button>
-          <Button onClick={createEmail} disabled={loading}>
+          <Button onClick={createEmail} disabled={loading || domains.length === 0}>
             {loading ? t("creating") : t("create")}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
   )
-} 
+}

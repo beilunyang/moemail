@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
-import { Zap, Eye, EyeOff } from "lucide-react"
+import { Zap } from "lucide-react" // * 移除了 Eye, EyeOff *
 import { useToast } from "@/components/ui/use-toast"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 interface EmailServiceConfig {
   enabled: boolean
-  apiKey: string
+  // * 移除了 apiKey *
   roleLimits: {
     duke: number
     knight: number
@@ -25,14 +25,14 @@ export function EmailServiceConfig() {
   const tSend = useTranslations("emails.send")
   const [config, setConfig] = useState<EmailServiceConfig>({
     enabled: false,
-    apiKey: "",
+    // * 移除了 apiKey *
     roleLimits: {
       duke: -1,
       knight: -1,
     }
   })
   const [loading, setLoading] = useState(false)
-  const [showToken, setShowToken] = useState(false)
+  // * 移除了 showToken *
   const { toast } = useToast()
 
   useEffect(() => {
@@ -47,7 +47,13 @@ export function EmailServiceConfig() {
         setConfig(data)
       }
     } catch (error) {
+      // * 获取配置失败的提示 *
       console.error("Failed to fetch email service config:", error)
+      toast({
+        title: t("saveFailed"), // * 复用保存失败的翻译 *
+        description: error instanceof Error ? error.message : t("saveFailed"),
+        variant: "destructive",
+      })
     }
   }
 
@@ -56,7 +62,7 @@ export function EmailServiceConfig() {
     try {
       const saveData = {
         enabled: config.enabled,
-        apiKey: config.apiKey,
+        // * 移除了 apiKey *
         roleLimits: config.roleLimits
       }
 
@@ -114,7 +120,8 @@ export function EmailServiceConfig() {
 
         {config.enabled && (
           <>
-            <div className="space-y-2">
+            {/* --- 移除了 API Key 输入框 --- */}
+            {/* <div className="space-y-2">
               <Label htmlFor="apiKey" className="text-sm font-medium">
                 {t("apiKey")}
               </Label>
@@ -141,6 +148,9 @@ export function EmailServiceConfig() {
                 </Button>
               </div>
             </div>
+            */}
+            {/* --- API Key 输入框结束 --- */}
+
 
             <div className="space-y-2">
               <Label className="text-sm font-medium">
@@ -174,13 +184,13 @@ export function EmailServiceConfig() {
                   ].map((role) => {
                     const isDisabled = config.roleLimits[role.key] === -1
                     const isEnabled = !isDisabled
-                    
+
                     return (
-                      <div 
-                        key={role.value} 
+                      <div
+                        key={role.value}
                         className={`group relative p-4 border-2 rounded-xl transition-all duration-200 ${
                           isEnabled
-                            ? 'border-primary/30 bg-primary/5 shadow-sm' 
+                            ? 'border-primary/30 bg-primary/5 shadow-sm'
                             : 'border-gray-200 hover:border-primary/20 hover:shadow-sm'
                         }`}
                       >
@@ -202,8 +212,8 @@ export function EmailServiceConfig() {
                               />
                             </div>
                             <div>
-                              <Label 
-                                htmlFor={`role-${role.value}`} 
+                              <Label
+                                htmlFor={`role-${role.value}`}
                                 className="text-base font-semibold cursor-pointer select-none flex items-center gap-2"
                               >
                                 <span className="text-2xl">
@@ -224,7 +234,7 @@ export function EmailServiceConfig() {
                                   type="number"
                                   min="-1"
                                   value={config.roleLimits[role.key]}
-                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                     setConfig((prev: EmailServiceConfig) => ({
                                       ...prev,
                                       roleLimits: {
@@ -252,7 +262,7 @@ export function EmailServiceConfig() {
           </>
         )}
 
-        <Button 
+        <Button
           onClick={handleSave}
           disabled={loading}
           className="w-full"
@@ -262,4 +272,4 @@ export function EmailServiceConfig() {
       </div>
     </div>
   )
-} 
+}

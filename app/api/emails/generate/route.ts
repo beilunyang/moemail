@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { nanoid } from "nanoid"
 import { createDb } from "@/lib/db"
-import { emails } from "@/lib/schema"
+import { emails, emailDomains } from "@/lib/schema" // * 修复：导入 emailDomains schema *
 import { eq, and, gt, sql } from "drizzle-orm"
 import { EXPIRY_OPTIONS } from "@/types/email"
 import { EMAIL_CONFIG } from "@/config"
@@ -53,10 +53,12 @@ export async function POST(request: Request) {
       )
     }
 
-    const domainString = await env.SITE_CONFIG.get("EMAIL_DOMAINS")
-    const domains = domainString ? domainString.split(',') : ["moemail.app"]
+    // * 修复：从数据库 emailDomains 表中验证域名，而不是从 KV *
+    const allowedDomain = await db.query.emailDomains.findFirst({
+      where: eq(emailDomains.domain, domain)
+    })
 
-    if (!domains || !domains.includes(domain)) {
+    if (!allowedDomain) {
       return NextResponse.json(
         { error: "无效的域名" },
         { status: 400 }
@@ -102,4 +104,4 @@ export async function POST(request: Request) {
       { status: 500 }
     )
   }
-} 
+}
