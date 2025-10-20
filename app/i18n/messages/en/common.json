@@ -14,7 +14,8 @@
     "delete": "Delete",
     "manage": "Manage",
     "add": "Add",
-    "edit": "Edit"
+    "edit": "Edit",
+    "close": "Close"
   },
   "nav": {
     "home": "Home",

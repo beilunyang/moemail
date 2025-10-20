@@ -136,19 +136,84 @@
     "deleteSuccess": "Domain deleted successfully",
     "deleteFailed": "Failed to delete domain"
   },
-  "promote": {
-    "title": "Role Management",
-    "description": "Manage user roles (Emperor only)",
-    "search": "Search Users",
-    "searchPlaceholder": "Enter username or email",
-    "username": "Username",
-    "email": "Email",
-    "role": "Role",
-    "actions": "Actions",
-    "promote": "Set as",
-    "noUsers": "No users found",
-    "loading": "Loading...",
-    "updateSuccess": "User role updated successfully",
-    "updateFailed": "Failed to update user role"
+  "userManagement": {
+    "title": "User Management",
+    "description": "Manage all users (Emperor only)",
+    "openButton": "Open User Manager",
+    "modalTitle": "User Management Center",
+    "tabs": {
+      "list": "User List",
+      "settings": "Registration Settings"
+    },
+    "list": {
+      "username": "Username",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions",
+      "addUser": "Add User",
+      "editUser": "Edit",
+      "deleteUser": "Delete",
+      "noUsers": "No users found",
+      "loading": "Loading...",
+      "searchPlaceholder": "Search by username or email",
+      "loadFailedTitle": "Error",
+      "loadFailedDesc": "Failed to load users"
+    },
+    "status": {
+      "active": "Active",
+      "banned": "Banned"
+    },
+    "addUserModal": {
+      "title": "Add New User",
+      "username": "Username",
+      "usernamePlaceholder": "Enter username",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password (leave empty to disable password login)",
+      "role": "Role",
+      "save": "Create User",
+      "saving": "Creating...",
+      "success": "User created successfully",
+      "failed": "Failed to create user",
+      "cancel": "Cancel",
+      "usernameRequired": "Username cannot be empty",
+      "unknownError": "Unknown error"
+    },
+    "editUserModal": {
+      "title": "Edit User",
+      "username": "Username (cannot change)",
+      "role": "Role",
+      "status": "Status",
+      "password": "New Password",
+      "passwordPlaceholder": "Leave empty to keep current password",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "success": "User updated successfully",
+      "failed": "Failed to update user",
+      "cancel": "Cancel",
+      "unknownError": "Unknown error"
+    },
+    "deleteUserModal": {
+      "title": "Confirm User Deletion",
+      "description": "Are you sure you want to delete user {username}? This action cannot be undone. All data (including emails and messages) for this user will be deleted.",
+      "confirm": "Confirm Delete",
+      "cancel": "Cancel",
+      "success": "User deleted successfully",
+      "failed": "Failed to delete user",
+      "unknownError": "Unknown error"
+    },
+    "settings": {
+      "allowRegistration": "Allow New User Registration",
+      "allowRegistrationDesc": "If enabled, new users can create accounts via the registration page.",
+      "saveSuccess": "Settings saved successfully",
+      "saveFailed": "Failed to save settings",
+      "save": "Save",
+      "saving": "Saving...",
+      "registrationEnabled": "Enabled",
+      "registrationDisabled": "Disabled",
+      "loadFailedTitle": "Error",
+      "loadFailedDesc": "Failed to load settings",
+      "unknownError": "Unknown error"
+    }
   }
 }

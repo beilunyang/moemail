@@ -14,7 +14,8 @@
     "delete": "删除",
     "manage": "管理",
     "add": "添加",
-    "edit": "编辑"
+    "edit": "编辑",
+    "close": "关闭"
   },
   "nav": {
     "home": "首页",

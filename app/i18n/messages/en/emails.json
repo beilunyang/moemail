@@ -2,6 +2,8 @@
   "noPermission": {
     "title": "Insufficient Permission",
     "description": "You don't have permission to access this page. Please contact the website administrator.",
+    "needPermission": "You don't have permission to access this page.",
+    "contactAdmin": "Please contact the website administrator.",
     "adminContact": "Admin Contact",
     "backToHome": "Back to Home"
   },
@@ -42,7 +44,9 @@
     "create": "Create",
     "creating": "Creating...",
     "success": "Email created successfully",
-    "failed": "Failed to create email"
+    "failed": "Failed to create email",
+    "loadFailed": "Failed to load domains",
+    "noDomainAvailable": "No domain available"
   },
   "messages": {
     "received": "Received",
@@ -165,4 +169,3 @@
     }
   }
 }
-

@@ -2,6 +2,8 @@
   "noPermission": {
     "title": "权限不足",
     "description": "你没有权限访问此页面，请联系网站管理员",
+    "needPermission": "你没有权限访问此页面。",
+    "contactAdmin": "请联系网站管理员。",
     "adminContact": "管理员联系方式",
     "backToHome": "返回首页"
   },
@@ -42,7 +44,9 @@
     "create": "创建",
     "creating": "创建中...",
     "success": "邮箱创建成功",
-    "failed": "创建邮箱失败"
+    "failed": "创建邮箱失败",
+    "loadFailed": "加载域名失败",
+    "noDomainAvailable": "没有可用的域名"
   },
   "messages": {
     "received": "收件箱",
@@ -165,4 +169,3 @@
     }
   }
 }
-
