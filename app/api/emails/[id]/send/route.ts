@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { createDb } from "@/lib/db"
-import { emails, messages, emailDomains } from "@/lib/schema" // 导入 emailDomains
+import { emails, messages } from "@/lib/schema"
 import { eq } from "drizzle-orm"
-// import { getRequestContext } from "@cloudflare/next-on-pages" // 移除了，因为不再从 env 获取全局 KEY
+import { getRequestContext } from "@cloudflare/next-on-pages"
 import { checkSendPermission } from "@/lib/send-permissions"
 
 export const runtime = "edge"
@@ -60,7 +60,6 @@ export async function POST(
     const { id } = await params
     const db = createDb()
 
-    // 检查全局发送权限
     const permissionResult = await checkSendPermission(session.user.id)
     if (!permissionResult.canSend) {
       return NextResponse.json(
@@ -98,43 +97,16 @@ export async function POST(
       )
     }
 
-    // --- 新增逻辑：检查域名的 Resend 配置 ---
-    const domain = email.address.split('@')[1]
-    if (!domain) {
-      return NextResponse.json(
-        { error: "无效的邮箱地址" },
-        { status: 400 }
-      )
-    }
+    const env = getRequestContext().env
+    const apiKey = await env.SITE_CONFIG.get("RESEND_API_KEY")
 
-    const emailDomain = await db.query.emailDomains.findFirst({
-      where: eq(emailDomains.domain, domain)
-    })
-
-    // 1. 检查域名是否存在或是否启用了 Resend
-    if (!emailDomain || !emailDomain.resendEnabled) {
-      return NextResponse.json(
-        { error: "此邮箱域名的发件功能未启用" },
-        { status: 403 }
-      )
-    }
-
-    // 2. 获取该域名专用的 API Key
-    const apiKey = emailDomain.resendApiKey
-    
     if (!apiKey) {
       return NextResponse.json(
-        { error: "此邮箱域名的 Resend 发件服务未配置 API Key，请联系管理员" },
+        { error: "Resend 发件服务未配置，请联系管理员" },
         { status: 500 }
       )
     }
-    // --- 结束新增逻辑 ---
 
-    // 移除旧的全局 API Key 逻辑
-    // const env = getRequestContext().env
-    // const apiKey = await env.SITE_CONFIG.get("RESEND_API_KEY")
-
-    // 使用从 emailDomain 获取的 apiKey
     await sendWithResend(to, subject, content, email.address, { apiKey })
 
     await db.insert(messages).values({

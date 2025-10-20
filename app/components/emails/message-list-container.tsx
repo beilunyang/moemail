@@ -11,7 +11,6 @@ interface MessageListContainerProps {
   email: {
     id: string
     address: string
-    resendEnabled?: boolean // 新增：添加 resendEnabled 属性
   }
   onMessageSelect: (messageId: string | null, messageType?: 'received' | 'sent') => void
   selectedMessageId?: string | null
@@ -21,21 +20,16 @@ interface MessageListContainerProps {
 export function MessageListContainer({ email, onMessageSelect, selectedMessageId, refreshTrigger }: MessageListContainerProps) {
   const t = useTranslations("emails.messages")
   const [activeTab, setActiveTab] = useState<'received' | 'sent'>('received')
-  const { canSend: canSendEmails } = useSendPermission() // 这是全局的发送权限
+  const { canSend: canSendEmails } = useSendPermission()
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId as 'received' | 'sent')
     onMessageSelect(null)
   }
 
-  // 新增：决定是否显示“已发送” Tab 的变量
-  // 需要全局权限(canSendEmails) 和 该邮箱域名的权限(email.resendEnabled) 都为 true
-  const showSentTab = canSendEmails && email.resendEnabled
-
   return (
     <div className="h-full flex flex-col">
-      {/* 修改：使用 showSentTab 变量 */}
-      {showSentTab ? (
+      {canSendEmails ? (
         <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
           <div className="p-2 border-b border-primary/20">
             <SlidingTabsList>
@@ -70,7 +64,6 @@ export function MessageListContainer({ email, onMessageSelect, selectedMessageId
           </TabsContent>
         </Tabs>
       ) : (
-        // 当 showSentTab 为 false 时，只显示收件箱
         <div className="flex-1 overflow-hidden">
           <MessageList
             email={email}
