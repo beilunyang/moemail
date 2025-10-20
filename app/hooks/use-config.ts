@@ -52,14 +52,15 @@ const useConfigStore = create<ConfigStore>((set) => ({
 
 export function useConfig() {
   const store = useConfigStore()
+  // 修复：解构 useEffect 依赖的属性
+  const { config, loading, error, fetch } = store
 
   useEffect(() => {
-    // * 修复：添加了 store.error 的检查 *
     // 只有在没有配置、不在加载中、且之前没有发生过错误时才 fetch
-    if (!store.config && !store.loading && !store.error) {
-      store.fetch()
+    if (!config && !loading && !error) {
+      fetch()
     }
-  }, [store.config, store.loading, store.error]) // * 修复：添加 store.error 到依赖数组 *
+  }, [config, loading, error, fetch]) // 修复：将解构后的属性添加到依赖数组
 
   return store
 }
