@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react" // 新增 useCallback
+import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useTranslations } from "next-intl"
 import { CreateDialog } from "./create-dialog"
@@ -58,8 +58,7 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
   const [emailToDelete, setEmailToDelete] = useState<Email | null>(null)
   const { toast } = useToast()
 
-  // 修复：使用 useCallback 包装
-  const fetchEmails = useCallback(async (cursor?: string) => {
+  const fetchEmails = async (cursor?: string) => {
     try {
       const url = new URL("/api/emails", window.location.origin)
       if (cursor) {
@@ -69,26 +68,24 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
       const data = await response.json() as EmailResponse
       
       if (!cursor) {
-        // 刷新逻辑：检查重复项
         const newEmails = data.emails
-        setEmails(prevEmails => {
-          const oldEmails = prevEmails
-          const lastDuplicateIndex = newEmails.findIndex(
-            newEmail => oldEmails.some(oldEmail => oldEmail.id === newEmail.id)
-          )
+        const oldEmails = emails
 
-          if (lastDuplicateIndex === -1) {
-            return newEmails
-          }
-          const uniqueNewEmails = newEmails.slice(0, lastDuplicateIndex)
-          return [...uniqueNewEmails, ...oldEmails]
-        })
-        setNextCursor(data.nextCursor)
+        const lastDuplicateIndex = newEmails.findIndex(
+          newEmail => oldEmails.some(oldEmail => oldEmail.id === newEmail.id)
+        )
+
+        if (lastDuplicateIndex === -1) {
+          setEmails(newEmails)
+          setNextCursor(data.nextCursor)
+          setTotal(data.total)
+          return
+        }
+        const uniqueNewEmails = newEmails.slice(0, lastDuplicateIndex)
+        setEmails([...uniqueNewEmails, ...oldEmails])
         setTotal(data.total)
         return
       }
-
-      // 加载更多逻辑
       setEmails(prev => [...prev, ...data.emails])
       setNextCursor(data.nextCursor)
       setTotal(data.total)
@@ -99,7 +96,7 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
       setRefreshing(false)
       setLoadingMore(false)
     }
-  }, []) // 修复：空依赖数组，因为内部没有使用外部状态
+  }
 
   const handleRefresh = async () => {
     setRefreshing(true)
@@ -121,7 +118,7 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
 
   useEffect(() => {
     if (session) fetchEmails()
-  }, [session, fetchEmails]) // 修复：添加 fetchEmails 到依赖项
+  }, [session])
 
   const handleDelete = async (email: Email) => {
     try {
@@ -264,4 +261,4 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
       </AlertDialog>
     </>
   )
-}
+} 

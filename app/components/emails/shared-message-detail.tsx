@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react" // 新增 useCallback
+import { useState, useEffect, useRef } from "react"
 import { Loader2 } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
@@ -55,8 +55,7 @@ export function SharedMessageDetail({
     }
   }, [message])
 
-  // 修复：使用 useCallback 包装
-  const updateIframeContent = useCallback(() => {
+  const updateIframeContent = () => {
     if (viewMode === "html" && message?.html && iframeRef.current) {
       const iframe = iframeRef.current
       const doc = iframe.contentDocument || iframe.contentWindow?.document
@@ -128,40 +127,31 @@ export function SharedMessageDetail({
         const updateHeight = () => {
           const container = iframe.parentElement
           if (container) {
-            // 设置最小高度，防止内容过少时 iframe 太小
-            const bodyHeight = doc.body.scrollHeight
-            const minHeight = 100 // 设置一个合适的最小高度
-            iframe.style.height = `${Math.max(bodyHeight, minHeight)}px`
-            // 如果需要 iframe 始终填满父容器，可以使用下面的代码
-            // iframe.style.height = `${container.clientHeight}px`
+            iframe.style.height = `${container.clientHeight}px`
           }
         }
 
-        // 稍微延迟更新高度，等待内容渲染
-        const timeoutId = setTimeout(updateHeight, 50)
+        updateHeight()
         window.addEventListener("resize", updateHeight)
 
         const resizeObserver = new ResizeObserver(updateHeight)
-        if (doc.body) {
-          resizeObserver.observe(doc.body)
-        }
+        resizeObserver.observe(doc.body)
 
         doc.querySelectorAll("img").forEach((img: HTMLImageElement) => {
           img.onload = updateHeight
         })
 
         return () => {
-          clearTimeout(timeoutId)
           window.removeEventListener("resize", updateHeight)
           resizeObserver.disconnect()
         }
       }
     }
-  }, [viewMode, message?.html, theme]) // 修复：添加依赖项
+  }
 
   useEffect(() => {
     updateIframeContent()
-  }, [updateIframeContent]) // 修复：添加 updateIframeContent 到依赖项
+  }, [message?.html, viewMode, theme])
 
   if (loading) {
     return (
@@ -235,8 +225,6 @@ export function SharedMessageDetail({
             ref={iframeRef}
             className="absolute inset-0 w-full h-full border-0 bg-transparent"
             sandbox="allow-same-origin allow-popups"
-            // 添加 title 属性以提高可访问性
-            title={t.messageContent}
           />
         ) : message.content ? (
           <div className="p-4 text-sm whitespace-pre-wrap">
@@ -244,8 +232,7 @@ export function SharedMessageDetail({
           </div>
         ) : (
           <div className="flex items-center justify-center h-32 text-gray-500 text-sm">
-            {/* 更明确的提示 */}
-            {message.html ? t.messageContent : t.selectMessage}
+            {t.selectMessage}
           </div>
         )}
       </div>

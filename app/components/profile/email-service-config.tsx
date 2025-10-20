@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react" // 新增 useCallback
+import React, { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
-import { Zap } from "lucide-react"
+import { Zap } from "lucide-react" // * 移除了 Eye, EyeOff *
 import { useToast } from "@/components/ui/use-toast"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 interface EmailServiceConfig {
   enabled: boolean
+  // * 移除了 apiKey *
   roleLimits: {
     duke: number
     knight: number
@@ -24,16 +25,21 @@ export function EmailServiceConfig() {
   const tSend = useTranslations("emails.send")
   const [config, setConfig] = useState<EmailServiceConfig>({
     enabled: false,
+    // * 移除了 apiKey *
     roleLimits: {
       duke: -1,
       knight: -1,
     }
   })
   const [loading, setLoading] = useState(false)
+  // * 移除了 showToken *
   const { toast } = useToast()
 
-  // 修复：使用 useCallback 包装 fetchConfig
-  const fetchConfig = useCallback(async () => {
+  useEffect(() => {
+    fetchConfig()
+  }, [])
+
+  const fetchConfig = async () => {
     try {
       const res = await fetch("/api/config/email-service")
       if (res.ok) {
@@ -49,17 +55,14 @@ export function EmailServiceConfig() {
         variant: "destructive",
       })
     }
-  }, [toast, t]) // 修复：添加 toast 和 t 作为依赖项
-
-  useEffect(() => {
-    fetchConfig()
-  }, [fetchConfig]) // 修复：将 fetchConfig 添加到依赖项数组
+  }
 
   const handleSave = async () => {
     setLoading(true)
     try {
       const saveData = {
         enabled: config.enabled,
+        // * 移除了 apiKey *
         roleLimits: config.roleLimits
       }
 
@@ -118,7 +121,37 @@ export function EmailServiceConfig() {
         {config.enabled && (
           <>
             {/* --- 移除了 API Key 输入框 --- */}
-            
+            {/* <div className="space-y-2">
+              <Label htmlFor="apiKey" className="text-sm font-medium">
+                {t("apiKey")}
+              </Label>
+              <div className="relative">
+                <Input
+                  id="apiKey"
+                  type={showToken ? "text" : "password"}
+                  value={config.apiKey}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig((prev: EmailServiceConfig) => ({ ...prev, apiKey: e.target.value }))}
+                  placeholder={t("apiKeyPlaceholder")}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowToken(!showToken)}
+                >
+                  {showToken ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            */}
+            {/* --- API Key 输入框结束 --- */}
+
+
             <div className="space-y-2">
               <Label className="text-sm font-medium">
                 {t("roleLimits")}
