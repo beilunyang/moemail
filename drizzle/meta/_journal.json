@@ -127,13 +127,6 @@
       "when": 1716383000000,
       "tag": "0017_handy_lionheart",
       "breakpoints": true
-    },
-    {
-      "idx": 18,
-      "version": "5",
-      "when": 1716384000000,
-      "tag": "0018_milky_havok",
-      "breakpoints": true
     }
   ]
 }
