@@ -14,6 +14,7 @@ import { Copy } from "lucide-react"
 interface Email {
   id: string
   address: string
+  resendEnabled?: boolean // 新增：添加 resendEnabled 属性
 }
 
 export function ThreeColumnLayout() {
@@ -23,7 +24,7 @@ export function ThreeColumnLayout() {
   const [selectedMessageType, setSelectedMessageType] = useState<'received' | 'sent'>('received')
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const { copyToClipboard } = useCopy()
-  const { canSend: canSendEmails } = useSendPermission()
+  const { canSend: canSendEmails } = useSendPermission() // 这是全局的发送权限
 
   const columnClass = "border-2 border-primary/20 bg-background rounded-lg overflow-hidden flex flex-col"
   const headerClass = "p-2 border-b-2 border-primary/20 flex items-center justify-between shrink-0"
@@ -50,6 +51,10 @@ export function ThreeColumnLayout() {
   const handleSendSuccess = () => {
     setRefreshTrigger(prev => prev + 1)
   }
+  
+  // 新增：决定是否显示发送按钮的变量
+  // 需要全局权限(canSendEmails) 和 该邮箱域名的权限(selectedEmail.resendEnabled) 都为 true
+  const showSendButton = selectedEmail && canSendEmails && selectedEmail.resendEnabled
 
   return (
     <div className="pb-5 pt-20 h-full flex flex-col">
@@ -62,7 +67,7 @@ export function ThreeColumnLayout() {
           <div className="flex-1 overflow-auto">
             <EmailList
               onEmailSelect={(email) => {
-                setSelectedEmail(email)
+                setSelectedEmail(email as Email) // 强制类型转换，因为 EmailList 返回的类型现在包含 resendEnabled
                 setSelectedMessageId(null)
               }}
               selectedEmailId={selectedEmail?.id}
@@ -81,7 +86,8 @@ export function ThreeColumnLayout() {
                       <Copy className="size-4" />
                     </div>
                   </div>
-                  {selectedEmail && canSendEmails && (
+                  {/* 修改：使用 showSendButton 变量 */}
+                  {showSendButton && (
                     <SendDialog 
                       emailId={selectedEmail.id} 
                       fromAddress={selectedEmail.address}
@@ -136,7 +142,7 @@ export function ThreeColumnLayout() {
               <div className="flex-1 overflow-auto">
                 <EmailList
                   onEmailSelect={(email) => {
-                    setSelectedEmail(email)
+                    setSelectedEmail(email as Email) // 强制类型转换
                   }}
                   selectedEmailId={selectedEmail?.id}
                 />
@@ -162,7 +168,8 @@ export function ThreeColumnLayout() {
                       <Copy className="size-4" />
                     </div>
                   </div>
-                  {canSendEmails && (
+                  {/* 修改：使用 showSendButton 变量 */}
+                  {showSendButton && (
                     <SendDialog 
                       emailId={selectedEmail.id} 
                       fromAddress={selectedEmail.address}

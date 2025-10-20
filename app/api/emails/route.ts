@@ -1,7 +1,7 @@
 import { createDb } from "@/lib/db"
-import { and, eq, gt, lt, or, sql } from "drizzle-orm"
+import { and, eq, gt, lt, or, sql, inArray } from "drizzle-orm" // 导入 inArray
 import { NextResponse } from "next/server"
-import { emails } from "@/lib/schema"
+import { emails, emailDomains } from "@/lib/schema" // 导入 emailDomains
 import { encodeCursor, decodeCursor } from "@/lib/cursor"
 import { getUserId } from "@/lib/apiKey"
 
@@ -51,15 +51,46 @@ export async function GET(request: Request) {
       ],
       limit: PAGE_SIZE + 1
     })
+
+    // --- 新增逻辑：获取并附加域名的是否启用 Resend 状态 ---
+    // 1. 从结果中提取所有唯一的域名
+    const domains = [...new Set(results.map(e => e.address.split('@')[1]).filter(Boolean))]
+
+    let domainMap = new Map<string, boolean>()
+
+    // 2. 如果有域名，则查询
+    if (domains.length > 0) {
+      const domainConfigs = await db.query.emailDomains.findMany({
+        where: inArray(emailDomains.domain, domains),
+        columns: {
+          domain: true,
+          resendEnabled: true
+        }
+      })
+      // 3. 创建一个 域名 -> resendEnabled 的映射
+      domainMap = new Map(domainConfigs.map(d => [d.domain, d.resendEnabled || false]))
+    }
+
+    // 4. 将 resendEnabled 状态附加到每个 email 对象
+    const emailsWithStatus = results.map(email => ({
+      ...email,
+      // 从映射中获取状态，如果域名不存在于表中，则默认为 false
+      resendEnabled: domainMap.get(email.address.split('@')[1]) || false
+    }))
+    // --- 结束新增逻辑 ---
     
-    const hasMore = results.length > PAGE_SIZE
+    const hasMore = results.length > PAGE_SIZE // 保持原始的 hasMore 逻辑
+    
+    // 注意：nextCursor 应该使用原始的 results 列表来获取正确的 createdAt 和 id
     const nextCursor = hasMore 
       ? encodeCursor(
-          results[PAGE_SIZE - 1].createdAt.getTime(),
-          results[PAGE_SIZE - 1].id
+          results[PAGE_SIZE - 1].createdAt.getTime(), // 使用原始 results
+          results[PAGE_SIZE - 1].id // 使用原始 results
         )
       : null
-    const emailList = hasMore ? results.slice(0, PAGE_SIZE) : results
+    
+    // emailList 应该使用附加了状态的列表
+    const emailList = hasMore ? emailsWithStatus.slice(0, PAGE_SIZE) : emailsWithStatus
 
     return NextResponse.json({ 
       emails: emailList,
