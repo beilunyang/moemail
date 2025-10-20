@@ -38,8 +38,7 @@ const useConfigStore = create<ConfigStore>((set) => ({
           adminContact: data.adminContact || "",
           maxEmails: Number(data.maxEmails) || EMAIL_CONFIG.MAX_ACTIVE_EMAILS
         },
-        loading: false,
-        error: null // * 修复：成功时清空错误 *
+        loading: false
       })
     } catch (error) {
       set({ 
@@ -54,12 +53,10 @@ export function useConfig() {
   const store = useConfigStore()
 
   useEffect(() => {
-    // * 修复：添加了 store.error 的检查 *
-    // 只有在没有配置、不在加载中、且之前没有发生过错误时才 fetch
-    if (!store.config && !store.loading && !store.error) {
+    if (!store.config && !store.loading) {
       store.fetch()
     }
-  }, [store.config, store.loading, store.error]) // * 修复：添加 store.error 到依赖数组 *
+  }, [store.config, store.loading])
 
   return store
-}
+} 

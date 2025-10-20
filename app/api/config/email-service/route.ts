@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server" // * 修复：从 'next/server' 导入，而不是 'next-server' *
+import { NextResponse } from "next/server"
 import { getRequestContext } from "@cloudflare/next-on-pages"
 import { checkPermission } from "@/lib/auth"
 import { PERMISSIONS } from "@/lib/permissions"
@@ -8,7 +8,7 @@ export const runtime = "edge"
 
 interface EmailServiceConfig {
   enabled: boolean
-  // * 移除了 apiKey *
+  apiKey: string
   roleLimits: {
     duke?: number
     knight?: number
@@ -26,23 +26,22 @@ export async function GET() {
 
   try {
     const env = getRequestContext().env
-    // * 移除了 env.SITE_CONFIG.get("RESEND_API_KEY") *
-    const [enabled, roleLimits] = await Promise.all([
+    const [enabled, apiKey, roleLimits] = await Promise.all([
       env.SITE_CONFIG.get("EMAIL_SERVICE_ENABLED"),
+      env.SITE_CONFIG.get("RESEND_API_KEY"),
       env.SITE_CONFIG.get("EMAIL_ROLE_LIMITS")
     ])
 
     const customLimits = roleLimits ? JSON.parse(roleLimits) : {}
-
+    
     const finalLimits = {
       duke: customLimits.duke !== undefined ? customLimits.duke : EMAIL_CONFIG.DEFAULT_DAILY_SEND_LIMITS.duke,
       knight: customLimits.knight !== undefined ? customLimits.knight : EMAIL_CONFIG.DEFAULT_DAILY_SEND_LIMITS.knight,
     }
 
-    // * 移除了 apiKey *
-    // * API Key 现在通过 /api/config/email-domains 接口按域名管理 *
     return NextResponse.json({
       enabled: enabled === "true",
+      apiKey: apiKey || "",
       roleLimits: finalLimits
     })
   } catch (error) {
@@ -66,16 +65,15 @@ export async function POST(request: Request) {
   try {
     const config = await request.json() as EmailServiceConfig
 
-    // * 移除了 apiKey 的校验 *
-    // if (config.enabled && !config.apiKey) {
-    //   return NextResponse.json(
-    //     { error: "启用 Resend 时，API Key 为必填项" },
-    //     { status: 400 }
-    //   )
-    // }
+    if (config.enabled && !config.apiKey) {
+      return NextResponse.json(
+        { error: "启用 Resend 时，API Key 为必填项" },
+        { status: 400 }
+      )
+    }
 
     const env = getRequestContext().env
-
+    
     const customLimits: { duke?: number; knight?: number } = {}
     if (config.roleLimits?.duke !== undefined) {
       customLimits.duke = config.roleLimits.duke
@@ -84,9 +82,9 @@ export async function POST(request: Request) {
       customLimits.knight = config.roleLimits.knight
     }
 
-    // * 移除了 env.SITE_CONFIG.put("RESEND_API_KEY", config.apiKey) *
     await Promise.all([
       env.SITE_CONFIG.put("EMAIL_SERVICE_ENABLED", config.enabled.toString()),
+      env.SITE_CONFIG.put("RESEND_API_KEY", config.apiKey),
       env.SITE_CONFIG.put("EMAIL_ROLE_LIMITS", JSON.stringify(customLimits))
     ])
 
@@ -98,4 +96,4 @@ export async function POST(request: Request) {
       { status: 500 }
     )
   }
-}
+} 
