@@ -13,7 +13,6 @@ export const users = sqliteTable("user", {
   image: text("image"),
   username: text("username").unique(),
   password: text("password"),
-  status: integer("status", { mode: "boolean" }).notNull().default(true), // 新增：用户状态，true=激活, false=封禁
 })
 export const accounts = sqliteTable(
   "account",
@@ -79,10 +78,10 @@ export const webhooks = sqliteTable('webhook', {
     .references(() => users.id, { onDelete: "cascade" }),
   url: text('url').notNull(),
   enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
-  createdAt: integer('created_at', { mode: "timestamp_ms" })
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .notNull()
     .$defaultFn(() => new Date()),
-  updatedAt: integer('updated_at', { mode: "timestamp_ms" })
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
     .notNull()
     .$defaultFn(() => new Date()),
 })
@@ -124,7 +123,7 @@ export const emailShares = sqliteTable('email_share', {
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .notNull()
     .$defaultFn(() => new Date()),
-  expiresAt: integer('expires_at', { mode: "timestamp_ms" }),
+  expiresAt: integer('expires_at', { mode: 'timestamp_ms' }),
 }, (table) => ({
   emailIdIdx: index('email_share_email_id_idx').on(table.emailId),
   tokenIdx: index('email_share_token_idx').on(table.token),
@@ -136,10 +135,10 @@ export const messageShares = sqliteTable('message_share', {
     .notNull()
     .references(() => messages.id, { onDelete: "cascade" }),
   token: text('token').notNull().unique(),
-  createdAt: integer('created_at', { mode: "timestamp_ms" })
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .notNull()
     .$defaultFn(() => new Date()),
-  expiresAt: integer('expires_at', { mode: "timestamp_ms" }),
+  expiresAt: integer('expires_at', { mode: 'timestamp_ms' }),
 }, (table) => ({
   messageIdIdx: index('message_share_message_id_idx').on(table.messageId),
   tokenIdx: index('message_share_token_idx').on(table.token),

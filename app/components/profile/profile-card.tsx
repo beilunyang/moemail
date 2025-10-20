@@ -8,8 +8,7 @@ import { signOut } from "next-auth/react"
 import { Github, Settings, Crown, Sword, User2, Gem, Mail } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { WebhookConfig } from "./webhook-config"
-// import { PromotePanel } from "./promote-panel" // 旧的组件
-import { UserManagementPanel } from "./user-management-panel" // 新增：用户管理面板
+import { PromotePanel } from "./promote-panel"
 import { EmailServiceConfig } from "./email-service-config"
 import { useRolePermission } from "@/hooks/use-role-permission"
 import { PERMISSIONS } from "@/lib/permissions"
@@ -36,7 +35,7 @@ export function ProfileCard({ user }: ProfileCardProps) {
   const router = useRouter()
   const { checkPermission } = useRolePermission()
   const canManageWebhook = checkPermission(PERMISSIONS.MANAGE_WEBHOOK)
-  const canPromote = checkPermission(PERMISSIONS.PROMOTE_USER) // 这个权限现在用于管理用户
+  const canPromote = checkPermission(PERMISSIONS.PROMOTE_USER)
   const canManageConfig = checkPermission(PERMISSIONS.MANAGE_CONFIG)
 
   return (
@@ -107,8 +106,7 @@ export function ProfileCard({ user }: ProfileCardProps) {
 
       {canManageConfig && <WebsiteConfigPanel />}
       {canManageConfig && <EmailServiceConfig />}
-      {/* {canPromote && <PromotePanel />} */} {/* 旧的面板 */}
-      {canPromote && <UserManagementPanel />} {/* 新增：替换为用户管理面板 */}
+      {canPromote && <PromotePanel />}
       {canManageWebhook && <ApiKeyPanel />}
 
       <div className="flex flex-col sm:flex-row gap-4 px-1">

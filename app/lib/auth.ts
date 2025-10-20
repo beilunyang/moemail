@@ -4,12 +4,11 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import { createDb, Db } from "./db"
 import { accounts, users, roles, userRoles } from "./schema"
 import { eq } from "drizzle-orm"
-// 修复：移除了不兼容 Edge 的 getRequestContext
-// import { getRequestContext } from "@cloudflare/next-on-pages" 
+import { getRequestContext } from "@cloudflare/next-on-pages"
 import { Permission, hasPermission, ROLES, Role } from "./permissions"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { hashPassword, comparePassword } from "@/lib/utils"
-import { authSchema } from "./validation"
+import { authSchema } from "@/lib/validation"
 import { generateAvatarUrl } from "./avatar"
 import { getUserId } from "./apiKey"
 
@@ -21,12 +20,7 @@ const ROLE_DESCRIPTIONS: Record<Role, string> = {
 }
 
 const getDefaultRole = async (): Promise<Role> => {
-  // 修复：将 getRequestContext().env 替换为 process.env
-  // Cloudflare Pages 会将 KV 绑定注入到 process.env 中
-  
-  // 修复：根据 ESLint 错误，添加注释说明
-  // @ts-expect-error Cloudflare 绑定会注入到 process.env
-  const defaultRole = await process.env.SITE_CONFIG.get("DEFAULT_ROLE")
+  const defaultRole = await getRequestContext().env.SITE_CONFIG.get("DEFAULT_ROLE")
 
   if (
     defaultRole === ROLES.DUKE ||
@@ -39,8 +33,7 @@ const getDefaultRole = async (): Promise<Role> => {
   return ROLES.CIVILIAN
 }
 
-// 修复：添加了 'export'
-export async function findOrCreateRole(db: Db, roleName: Role) {
+async function findOrCreateRole(db: Db, roleName: Role) {
   let role = await db.query.roles.findFirst({
     where: eq(roles.name, roleName),
   })
@@ -137,11 +130,6 @@ export const {
 
         if (!user) {
           throw new Error("用户名或密码错误")
-        }
-
-        // 修复：检查用户状态
-        if (!user.status) {
-          throw new Error("用户已被封禁")
         }
 
         const isValid = await comparePassword(password as string, user.password as string)
@@ -243,11 +231,6 @@ export async function register(username: string, password: string) {
       password: hashedPassword,
     })
     .returning()
-
-  // 修复：注册时分配默认角色
-  const defaultRole = await getDefaultRole()
-  const role = await findOrCreateRole(db, defaultRole)
-  await assignRoleToUser(db, user.id, role.id)
 
   return user
 }
