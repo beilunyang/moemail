@@ -6,14 +6,10 @@ import { checkPermission } from "@/lib/auth"
 import { Permission } from "@/lib/permissions"
 import { handleApiKeyAuth } from "@/lib/apiKey"
 
-// * 修复：调整了 API 权限列表的顺序和内容 *
 const API_PERMISSIONS: Record<string, Permission> = {
   '/api/emails': PERMISSIONS.MANAGE_EMAIL,
   '/api/webhook': PERMISSIONS.MANAGE_WEBHOOK,
   '/api/roles/promote': PERMISSIONS.PROMOTE_USER,
-  // * 修复：为 email-domains 添加特定的权限检查 (MANAGE_EMAIL) *
-  // * 必须将其置于宽泛的 /api/config 规则之前，以确保优先匹配 *
-  '/api/config/email-domains': PERMISSIONS.MANAGE_EMAIL,
   '/api/config': PERMISSIONS.MANAGE_CONFIG,
   '/api/api-keys': PERMISSIONS.MANAGE_API_KEY,
 }
@@ -81,7 +77,7 @@ export const config = {
     '/api/emails/:path*',
     '/api/webhook/:path*',
     '/api/roles/:path*',
-    '/api/config/:path*', // * 修复：确保 /api/config/email-domains 被 matcher 覆盖 *
+    '/api/config/:path*',
     '/api/api-keys/:path*',
   ]
 } 
