@@ -13,7 +13,8 @@ export const runtime = "edge"
  */
 export async function GET() {
   // 权限检查
-  const canAccess = await checkPermission(PERMISSIONS.MANAGE_CONFIG)
+  // * 修复：将权限从不存在的 CREATE_EMAIL 更改为 MANAGE_EMAIL，允许有权管理邮箱的用户（骑士、公爵、皇帝）获取域名列表，平民无此权限 *
+  const canAccess = await checkPermission(PERMISSIONS.MANAGE_EMAIL)
   if (!canAccess) {
     return NextResponse.json({ error: "权限不足" }, { status: 403 })
   }
@@ -38,7 +39,7 @@ export async function GET() {
  * 添加一个新的邮箱域名配置
  */
 export async function POST(request: Request) {
-  // 权限检查
+  // 权限检查 (POST 保持 MANAGE_CONFIG 权限是正确的，因为这是管理操作)
   const canAccess = await checkPermission(PERMISSIONS.MANAGE_CONFIG)
   if (!canAccess) {
     return NextResponse.json({ error: "权限不足" }, { status: 403 })
