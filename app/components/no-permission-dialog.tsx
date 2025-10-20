@@ -17,9 +17,7 @@ export function NoPermissionDialog() {
         <div className="bg-background border-2 border-primary/20 rounded-lg p-6 md:p-12 shadow-lg">
           <div className="text-center space-y-4">
             <h1 className="text-xl md:text-2xl font-bold">{t("title")}</h1>
-            {/* 修复：将 description 拆分为两个 p 标签，并使用新的 i18n 键 */}
-            <p className="text-sm md:text-base text-muted-foreground">{t("needPermission")}</p>
-            <p className="text-sm md:text-base text-muted-foreground">{t("contactAdmin")}</p>
+            <p className="text-sm md:text-base text-muted-foreground">{t("description")}</p>
             {
               config?.adminContact && (
                 <p className="text-sm md:text-base text-muted-foreground">{t("adminContact")}：{config.adminContact}</p>

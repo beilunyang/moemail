@@ -107,7 +107,7 @@
     "save": "保存配置",
     "saving": "保存中...",
     "saveSuccess": "配置保存成功",
-    "saveFailed": "配置保存失败"
+    "saveFailed": "保存配置失败"
   },
   "domainManagement": {
     "title": "邮箱域名管理",
@@ -136,84 +136,19 @@
     "deleteSuccess": "域名删除成功",
     "deleteFailed": "删除域名失败"
   },
-  "userManagement": {
-    "title": "用户管理",
-    "description": "管理所有用户（仅皇帝可用）",
-    "openButton": "打开用户管理器",
-    "modalTitle": "用户管理中心",
-    "tabs": {
-      "list": "用户列表",
-      "settings": "注册设置"
-    },
-    "list": {
-      "username": "用户名",
-      "email": "邮箱",
-      "role": "角色",
-      "status": "状态",
-      "actions": "操作",
-      "addUser": "添加用户",
-      "editUser": "编辑",
-      "deleteUser": "删除",
-      "noUsers": "暂无用户",
-      "loading": "加载中...",
-      "searchPlaceholder": "搜索用户名或邮箱",
-      "loadFailedTitle": "错误",
-      "loadFailedDesc": "加载用户列表失败"
-    },
-    "status": {
-      "active": "激活",
-      "banned": "已封禁"
-    },
-    "addUserModal": {
-      "title": "添加新用户",
-      "username": "用户名",
-      "usernamePlaceholder": "输入用户名",
-      "password": "密码",
-      "passwordPlaceholder": "输入密码 (留空则禁用密码登录)",
-      "role": "角色",
-      "save": "创建用户",
-      "saving": "创建中...",
-      "success": "用户创建成功",
-      "failed": "创建用户失败",
-      "cancel": "取消",
-      "usernameRequired": "用户名不能为空",
-      "unknownError": "未知错误"
-    },
-    "editUserModal": {
-      "title": "编辑用户",
-      "username": "用户名 (不可修改)",
-      "role": "角色",
-      "status": "状态",
-      "password": "新密码",
-      "passwordPlaceholder": "留空则不修改密码",
-      "save": "保存更改",
-      "saving": "保存中...",
-      "success": "用户信息更新成功",
-      "failed": "更新用户信息失败",
-      "cancel": "取消",
-      "unknownError": "未知错误"
-    },
-    "deleteUserModal": {
-      "title": "确认删除用户",
-      "description": "确定要删除用户 {username} 吗？此操作不可恢复，该用户的所有数据（包括邮箱和邮件）都将被删除。",
-      "confirm": "确认删除",
-      "cancel": "取消",
-      "success": "用户删除成功",
-      "failed": "删除用户失败",
-      "unknownError": "未知错误"
-    },
-    "settings": {
-      "allowRegistration": "允许新用户注册",
-      "allowRegistrationDesc": "开启后，新用户将能够通过登录页的注册功能创建账户。",
-      "saveSuccess": "设置保存成功",
-      "saveFailed": "设置保存失败",
-      "save": "保存",
-      "saving": "保存中...",
-      "registrationEnabled": "已启用",
-      "registrationDisabled": "已禁用",
-      "loadFailedTitle": "错误",
-      "loadFailedDesc": "加载设置失败",
-      "unknownError": "未知错误"
-    }
+  "promote": {
+    "title": "角色管理",
+    "description": "管理用户角色（仅皇帝可用）",
+    "search": "搜索用户",
+    "searchPlaceholder": "输入用户名或邮箱",
+    "username": "用户名",
+    "email": "邮箱",
+    "role": "角色",
+    "actions": "Actions",
+    "promote": "设为",
+    "noUsers": "未找到用户",
+    "loading": "加载中...",
+    "updateSuccess": "用户角色更新成功",
+    "updateFailed": "更新用户角色失败"
   }
 }
