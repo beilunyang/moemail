@@ -13,7 +13,17 @@
     "login": "로그인",
     "profile": "프로필",
     "logout": "로그아웃",
-    "backToMailbox": "메일함으로 돌아가기"
+    "backToMailbox": "메일함으로 돌아가기",
+    "about": "회사 소개",
+    "privacy": "개인정보 보호정책",
+    "terms": "서비스 약관",
+    "blog": "블로그"
+  },
+  "footer": {
+    "copyright": "© {year} MoeMail. All rights reserved.",
+    "contact": "문의하기",
+    "github": "GitHub",
+    "telegram": "Telegram"
   },
   "github": "소스 코드 받기"
 }

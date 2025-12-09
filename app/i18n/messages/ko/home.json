@@ -8,19 +8,69 @@
     },
     "instant": {
       "title": "이메일 공유",
-      "description": "다른 사람과 메일함 공유"
+      "description": "메일함을 다른 사람과 공유"
     },
     "expiry": {
       "title": "자동 만료",
-      "description": "기한이 되면 자동으로 만료"
+      "description": "기한이 되면 자동으로 무효화"
     },
     "openapi": {
-      "title": "Open API",
-      "description": "전체 OpenAPI 인터페이스 제공"
+      "title": "오픈 API",
+      "description": "완전한 OpenAPI 인터페이스 제공"
     }
   },
   "actions": {
     "enterMailbox": "메일함 입장",
     "getStarted": "시작하기"
+  },
+  "howItWorks": {
+    "title": "사용 방법",
+    "step1": {
+      "title": "가입하기",
+      "description": "개인 대시보드에 안전하게 액세스하기 위한 계정을 만드세요."
+    },
+    "step2": {
+      "title": "메일함 생성",
+      "description": "맞춤형 또는 무작위 임시 이메일 주소를 즉시 생성합니다."
+    },
+    "step3": {
+      "title": "이메일 관리",
+      "description": "대시보드에서 실시간으로 이메일을 수신하고 확인합니다."
+    },
+    "advStep1": {
+      "title": "Webhooks",
+      "description": "이메일이 도착하면 자신의 서버로 실시간 알림을 받습니다."
+    },
+    "advStep2": {
+      "title": "OpenAPI",
+      "description": "표준 REST API를 사용하여 MoeMail을 애플리케이션에 통합합니다."
+    },
+    "advStep3": {
+      "title": "공유 기능",
+      "description": "개별 이메일 또는 전체 메일함을 다른 사람과 쉽게 공유할 수 있습니다."
+    }
+  },
+  "faq": {
+    "title": "자주 묻는 질문",
+    "q1": {
+      "question": "등록이 필요한가요?",
+      "answer": "네, 임시 메일함을 안전하게 관리하려면 등록이 필요합니다."
+    },
+    "q2": {
+      "question": "이메일은 얼마나 보관되나요?",
+      "answer": "이메일은 임시로 저장되며 만료 후 자동으로 삭제됩니다."
+    },
+    "q3": {
+      "question": "이메일을 보낼 수 있나요?",
+      "answer": "적절한 권한을 가진 사용자는 이메일 전송 기능을 사용할 수 있습니다."
+    },
+    "q4": {
+      "question": "여러 개의 메일함을 가질 수 있나요?",
+      "answer": "네, 하나의 계정에서 여러 임시 이메일 주소를 생성하고 관리할 수 있습니다."
+    },
+    "q5": {
+      "question": "OpenAPI에 어떻게 액세스하나요?",
+      "answer": "https://docs.moemail.app/api.html#openapi에서 OpenAPI 정의에 액세스할 수 있습니다. 인증에는 프로필의 API 키가 필요합니다."
+    }
   }
 }

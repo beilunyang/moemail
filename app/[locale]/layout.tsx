@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server"
 import { i18n, type Locale } from "@/i18n/config"
 import type { Metadata, Viewport } from "next"
 import { FloatMenu } from "@/components/float-menu"
+import { ConditionalFooter } from "@/components/layout/conditional-footer"
 import { ThemeProvider } from "@/components/theme/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { cn } from "@/lib/utils"
@@ -29,10 +30,14 @@ async function getMessages(locale: Locale) {
     const metadata = (await import(`@/i18n/messages/${locale}/metadata.json`)).default
     const emails = (await import(`@/i18n/messages/${locale}/emails.json`)).default
     const profile = (await import(`@/i18n/messages/${locale}/profile.json`)).default
-    return { common, home, auth, metadata, emails, profile }
+    const privacy = (await import(`@/i18n/messages/${locale}/privacy.json`)).default
+    const terms = (await import(`@/i18n/messages/${locale}/terms.json`)).default
+    const about = (await import(`@/i18n/messages/${locale}/about.json`)).default
+    const blog = (await import(`@/i18n/messages/${locale}/blog.json`)).default
+    return { common, home, auth, metadata, emails, profile, privacy, terms, about, blog }
   } catch (error) {
     console.error(`Failed to load messages for locale ${locale}:`, error)
-    return { common: {}, home: {}, auth: {}, metadata: {}, emails: {}, profile: {} }
+    return { common: {}, home: {}, auth: {}, metadata: {}, emails: {}, profile: {}, privacy: {}, terms: {}, about: {}, blog: {} }
   }
 }
 
@@ -46,7 +51,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "metadata" })
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://moemail.app"
-  
+
   // Generate hreflang links for all supported locales
   const languages: Record<string, string> = {}
   i18n.locales.forEach((loc) => {
@@ -117,7 +122,7 @@ export default async function LocaleLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body 
+      <body
         className={cn(
           zpix.variable,
           "font-zpix min-h-screen antialiased",
@@ -135,6 +140,7 @@ export default async function LocaleLayout({
           <Providers>
             <NextIntlClientProvider locale={locale} messages={messages}>
               {children}
+              <ConditionalFooter />
               <FloatMenu />
             </NextIntlClientProvider>
           </Providers>

@@ -22,6 +22,55 @@
   "actions": {
     "enterMailbox": "進入郵箱",
     "getStarted": "開始使用"
+  },
+  "howItWorks": {
+    "title": "如何使用",
+    "step1": {
+      "title": "註冊帳號",
+      "description": "建立一個帳號以安全地存取您的個人控制台。"
+    },
+    "step2": {
+      "title": "建立郵箱",
+      "description": "立即產生自訂或隨機的臨時郵箱地址。"
+    },
+    "step3": {
+      "title": "管理郵件",
+      "description": "在控制台中即時接收和檢視您的郵件。"
+    },
+    "advStep1": {
+      "title": "Webhooks",
+      "description": "當郵件到達時，即時向您的伺服器傳送通知。"
+    },
+    "advStep2": {
+      "title": "OpenAPI",
+      "description": "使用標準 REST API 將 MoeMail 整合到您的應用程式中。"
+    },
+    "advStep3": {
+      "title": "分享功能",
+      "description": "輕鬆與他人分享單個郵件或整個郵箱。"
+    }
+  },
+  "faq": {
+    "title": "常見問題",
+    "q1": {
+      "question": "我需要註冊嗎？",
+      "answer": "是的，為了安全地管理您的臨時郵箱，需要註冊帳號。"
+    },
+    "q2": {
+      "question": "郵件會儲存多久？",
+      "answer": "郵件會暫時儲存，並在過期後自動刪除。"
+    },
+    "q3": {
+      "question": "我可以傳送郵件嗎？",
+      "answer": "擁有相應權限的使用者可以使用傳送郵件功能。"
+    },
+    "q4": {
+      "question": "我可以擁有多個郵箱嗎？",
+      "answer": "是的，您可以在一個帳號下建立並管理多個臨時郵箱地址。"
+    },
+    "q5": {
+      "question": "如何存取 OpenAPI？",
+      "answer": "您可以存取 https://docs.moemail.app/api.html#openapi 檢視 OpenAPI 文件。認證需要使用個人資料中的 API 金鑰。"
+    }
   }
 }
-

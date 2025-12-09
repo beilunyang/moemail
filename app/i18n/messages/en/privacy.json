@@ -1,0 +1,24 @@
+{
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: December 9, 2024",
+    "introduction": {
+        "title": "1. Introduction",
+        "content": "Welcome to MoeMail. We respect your privacy and represent that we do not collect any personal data from you when you use our temporary email service."
+    },
+    "informationCollection": {
+        "title": "2. Information Collection",
+        "content": "We require registration to provide you with a secure personal dashboard. We collect minimal information (such as username) for account management. We do not track your IP address for tracking purposes."
+    },
+    "emailContent": {
+        "title": "3. Email Content",
+        "content": "Emails received to your temporary address are stored for a limited time (e.g., 24 hours) and then permanently deleted. We do not read or analyze your email content."
+    },
+    "thirdParty": {
+        "title": "4. Third-Party Services",
+        "content": "We may use third-party services for hosting or analytics (like Google Analytics) which may collect anonymous usage data."
+    },
+    "contact": {
+        "title": "5. Contact Us",
+        "content": "If you have any questions about this Privacy Policy, please contact us via our GitHub repository."
+    }
+}

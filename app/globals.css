@@ -59,6 +59,17 @@
 }
 
 @layer utilities {
+  .animate-gradient {
+    background-size: 200% auto;
+    animation: gradient 4s linear infinite;
+  }
+  
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
   .bg-grid-primary {
     background-image: linear-gradient(var(--primary) 1px, transparent 1px),
       linear-gradient(90deg, var(--primary) 1px, transparent 1px);

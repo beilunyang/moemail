@@ -1,0 +1,34 @@
+{
+    "title": "关于 MoeMail",
+    "subtitle": "一个基于 Next.js + Cloudflare 技术栈构建的可爱临时邮箱服务，在保护您的隐私的同时保持简单可爱 🎉",
+    "features": {
+        "privacy": {
+            "title": "隐私优先",
+            "description": "我们不会追踪您。安全的账户访问确保您的邮箱保持私密。保护您的真实邮箱地址，远离垃圾邮件和不必要的订阅。"
+        },
+        "speed": {
+            "title": "闪电般快速",
+            "description": "即刻获取您的临时邮箱地址，自动轮询实时接收邮件通知。快速设置，只需注册即可立即开始使用。"
+        },
+        "openSource": {
+            "title": "开源且免费",
+            "description": "我们的代码在 GitHub 上开源。基于 Cloudflare 构建，可实现免费自部署，无需任何费用。您可以验证我们如何处理您的数据，甚至可以自己托管。"
+        }
+    },
+    "mission": {
+        "title": "我们的使命",
+        "content": "在数字隐私不断受到威胁、垃圾邮件成为日常困扰的时代，MoeMail 旨在提供一个简单有效的解决方案。我们相信每个人都应该拥有一个干净的收件箱，并有权在注册一次性服务或测试不受信任的网站时保持个人电子邮件地址的私密性。MoeMail 采用现代 Web 技术构建，由 Cloudflare 边缘网络提供支持，提供快速、安全且完全免费的临时邮箱服务，界面可爱友好。"
+    },
+    "techStack": {
+        "title": "技术栈",
+        "content": "MoeMail 采用前沿技术构建：Next.js 框架、Cloudflare Pages 托管、D1 数据库、NextAuth 认证、Tailwind CSS 样式、Drizzle ORM 类型安全数据库操作。我们通过 next-intl 支持多语言，并基于 Radix UI 组件提供现代化响应式界面。"
+    },
+    "contact": {
+        "title": "参与其中",
+        "intro": "MoeMail 是一个开源项目。如果您有建议、需要支持或想要贡献，请访问我们的",
+        "github": "GitHub 仓库",
+        "joinText": "。加入我们的",
+        "telegram": "Telegram 社区 @moecloudflare",
+        "outro": "以获取最新动态。"
+    }
+}

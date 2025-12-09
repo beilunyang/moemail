@@ -13,7 +13,17 @@
     "login": "登入",
     "profile": "個人中心",
     "logout": "登出",
-    "backToMailbox": "返回郵箱"
+    "backToMailbox": "返回郵箱",
+    "about": "關於我們",
+    "privacy": "隱私政策",
+    "terms": "服務條款",
+    "blog": "部落格"
+  },
+  "footer": {
+    "copyright": "© {year} MoeMail. 版權所有。",
+    "contact": "聯絡方式",
+    "github": "GitHub",
+    "telegram": "Telegram"
   },
   "github": "取得網站原始碼"
 }

@@ -1,0 +1,34 @@
+{
+    "title": "About MoeMail",
+    "subtitle": "A cute temporary email service built with Next.js + Cloudflare technology stack, protecting your privacy while keeping things simple and adorable 🎉",
+    "features": {
+        "privacy": {
+            "title": "Privacy First",
+            "description": "We don't track you. Secure account access ensures your mailbox remains private. Protect your real email address from spam and unnecessary subscriptions."
+        },
+        "speed": {
+            "title": "Lightning Fast",
+            "description": "Get your temporary email address instantly with automatic polling for real-time email notifications. Quick setup - just sign up and start using immediately."
+        },
+        "openSource": {
+            "title": "Open Source & Free",
+            "description": "Our code is open source on GitHub. Built on Cloudflare, capable of free self-hosting without any cost. You can verify how we handle your data and even host it yourself."
+        }
+    },
+    "mission": {
+        "title": "Our Mission",
+        "content": "In an age where digital privacy is constantly under threat and spam is a daily nuisance, MoeMail aims to provide a simple, effective solution. We believe that everyone deserves a clean inbox and the right to keep their personal email address private when signing up for one-time services or testing untrusted websites. Built with modern web technologies and powered by Cloudflare's edge network, MoeMail offers a fast, secure, and completely free temporary email service with a cute and friendly interface."
+    },
+    "techStack": {
+        "title": "Technology Stack",
+        "content": "MoeMail is built with cutting-edge technologies: Next.js for the framework, Cloudflare Pages for hosting, D1 for database, NextAuth for authentication, Tailwind CSS for styling, and Drizzle ORM for type-safe database operations. We support multiple languages through next-intl and provide a modern, responsive UI based on Radix UI components."
+    },
+    "contact": {
+        "title": "Get Involved",
+        "intro": "MoeMail is an open-source project. If you have suggestions, require support, or want to contribute, please visit our",
+        "github": "GitHub repository",
+        "joinText": ". Join our community on",
+        "telegram": "Telegram @moecloudflare",
+        "outro": "to stay updated with the latest developments."
+    }
+}
