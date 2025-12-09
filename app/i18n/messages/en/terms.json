@@ -1,0 +1,29 @@
+{
+    "title": "Terms of Service",
+    "lastUpdated": "Last updated: December 9, 2024",
+    "acceptance": {
+        "title": "1. Acceptance of Terms",
+        "content": "By accessing and using MoeMail, you accept and agree to be bound by the terms and provision of this agreement."
+    },
+    "description": {
+        "title": "2. Description of Service",
+        "content": "MoeMail provides temporary disposable email addresses. This service is provided \"as is\" and intended for lawful purposes only."
+    },
+    "prohibited": {
+        "title": "3. Prohibited Use",
+        "content": "You agree not to use the service for:",
+        "items": [
+            "Sending spam or unsolicited emails.",
+            "Illegal activities.",
+            "Harassment or abuse."
+        ]
+    },
+    "disclaimer": {
+        "title": "4. Disclaimer",
+        "content": "We make no warranties about the reliability or availability of the service. Emails are temporary and may be deleted at any time."
+    },
+    "changes": {
+        "title": "5. Changes to Terms",
+        "content": "We reserve the right to modify these terms at any time."
+    }
+}

@@ -1,27 +1,76 @@
 {
   "title": "MoeMail",
-  "subtitle": "かわいい使い捨てメールサービス",
+  "subtitle": "かわいい一時メールサービス",
   "features": {
     "privacy": {
       "title": "プライバシー保護",
-      "description": "本物のメールアドレスを保護します"
+      "description": "実際のメールアドレスを保護"
     },
     "instant": {
-      "title": "メールボックス共有",
-      "description": "メールボックスを他の人と共有できます"
+      "title": "メール共有",
+      "description": "メールボックスを他の人と共有"
     },
     "expiry": {
       "title": "自動期限切れ",
-      "description": "有効期限が切れると自動的に無効になります"
+      "description": "期限が来ると自動的に無効化"
     },
     "openapi": {
-      "title": "オープンAPI",
+      "title": "オープン API",
       "description": "完全な OpenAPI インターフェースを提供"
     }
   },
   "actions": {
     "enterMailbox": "メールボックスに入る",
-    "getStarted": "今すぐ始める"
+    "getStarted": "始める"
+  },
+  "howItWorks": {
+    "title": "使い方",
+    "step1": {
+      "title": "サインアップ",
+      "description": "個人ダッシュボードに安全にアクセスするためのアカウントを作成します。"
+    },
+    "step2": {
+      "title": "メールボックス作成",
+      "description": "カスタムまたはランダムな一時メールアドレスを即座に生成します。"
+    },
+    "step3": {
+      "title": "メール管理",
+      "description": "ダッシュボードからリアルタイムでメールを受信して表示します。"
+    },
+    "advStep1": {
+      "title": "Webhooks",
+      "description": "メールが届いたときに、自分のサーバーにリアルタイムで通知を受け取ります。"
+    },
+    "advStep2": {
+      "title": "OpenAPI",
+      "description": "標準 REST API を使用して MoeMail をアプリケーションに統合します。"
+    },
+    "advStep3": {
+      "title": "共有機能",
+      "description": "個別のメールまたはメールボックス全体を他の人と簡単に共有できます。"
+    }
+  },
+  "faq": {
+    "title": "よくある質問",
+    "q1": {
+      "question": "登録は必要ですか？",
+      "answer": "はい、一時メールボックスを安全に管理するには登録が必要です。"
+    },
+    "q2": {
+      "question": "メールはどのくらい保存されますか？",
+      "answer": "メールは一時的に保存され、期限切れ後に自動的に削除されます。"
+    },
+    "q3": {
+      "question": "メールを送信できますか？",
+      "answer": "適切な権限を持つユーザーは、メール送信機能を使用できます。"
+    },
+    "q4": {
+      "question": "複数のメールボックスを持てますか？",
+      "answer": "はい、1つのアカウントで複数の一時メールアドレスを作成および管理できます。"
+    },
+    "q5": {
+      "question": "OpenAPI にアクセスするには？",
+      "answer": "https://docs.moemail.app/api.html#openapi で OpenAPI 定義にアクセスできます。認証にはプロフィールから API キーが必要です。"
+    }
   }
 }
-

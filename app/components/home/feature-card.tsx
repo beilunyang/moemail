@@ -1,12 +1,12 @@
-interface FeatureCardProps { 
+interface FeatureCardProps {
   icon: React.ReactNode
   title: string
-  description: string 
+  description: string
 }
 
 export function FeatureCard({ icon, title, description }: FeatureCardProps) {
   return (
-    <div className="p-4 rounded border-2 border-primary/20 hover:border-primary/40 transition-colors bg-white/5 backdrop-blur">
+    <div className="p-4 rounded-xl border border-primary/20 bg-background/50 backdrop-blur-sm hover:border-primary/50 transition-colors group">
       <div className="flex items-center gap-3">
         <div className="rounded-lg bg-primary/10 text-primary p-2">
           {icon}

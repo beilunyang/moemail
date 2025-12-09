@@ -13,7 +13,17 @@
     "login": "Login",
     "profile": "Profile",
     "logout": "Logout",
-    "backToMailbox": "Back to Mailbox"
+    "backToMailbox": "Back to Mailbox",
+    "about": "About Us",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "blog": "Blog"
+  },
+  "footer": {
+    "copyright": "© {year} MoeMail. All rights reserved.",
+    "contact": "Contact",
+    "github": "GitHub",
+    "telegram": "Telegram"
   },
   "github": "Get Source Code"
 }

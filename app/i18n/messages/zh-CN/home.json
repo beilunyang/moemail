@@ -22,6 +22,55 @@
   "actions": {
     "enterMailbox": "进入邮箱",
     "getStarted": "开始使用"
+  },
+  "howItWorks": {
+    "title": "如何使用",
+    "step1": {
+      "title": "注册账号",
+      "description": "创建一个账号以安全地访问您的个人控制台。"
+    },
+    "step2": {
+      "title": "创建邮箱",
+      "description": "立即生成自定义或随机的临时邮箱地址。"
+    },
+    "step3": {
+      "title": "管理邮件",
+      "description": "在控制台中实时接收和查看您的邮件。"
+    },
+    "advStep1": {
+      "title": "Webhooks",
+      "description": "当邮件到达时，实时向您的服务器发送通知。"
+    },
+    "advStep2": {
+      "title": "OpenAPI",
+      "description": "使用标准 REST API 将 MoeMail 集成到您的应用中。"
+    },
+    "advStep3": {
+      "title": "分享功能",
+      "description": "轻松与他人分享单个邮件或整个邮箱。"
+    }
+  },
+  "faq": {
+    "title": "常见问题",
+    "q1": {
+      "question": "我需要注册吗？",
+      "answer": "是的，为了安全地管理您的临时邮箱，需要注册账号。"
+    },
+    "q2": {
+      "question": "邮件会保存多久？",
+      "answer": "邮件会暂时存储，并在过期后自动删除。"
+    },
+    "q3": {
+      "question": "我可以发送邮件吗？",
+      "answer": "拥有相应权限的用户可以使用发送邮件功能。"
+    },
+    "q4": {
+      "question": "我可以拥有多个邮箱吗？",
+      "answer": "是的，您可以在一个账号下创建并管理多个临时邮箱地址。"
+    },
+    "q5": {
+      "question": "如何访问 OpenAPI？",
+      "answer": "您可以访问 https://docs.moemail.app/api.html#openapi 查看 OpenAPI 文档。认证需要使用个人资料中的 API 密钥。"
+    }
   }
 }
-

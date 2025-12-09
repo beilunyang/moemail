@@ -8,7 +8,7 @@
     },
     "instant": {
       "title": "Email Sharing",
-      "description": "Share your mailbox with others"
+      "description": "REST API available"
     },
     "expiry": {
       "title": "Auto Expiry",
@@ -22,6 +22,55 @@
   "actions": {
     "enterMailbox": "Enter Mailbox",
     "getStarted": "Get Started"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "step1": {
+      "title": "Sign Up",
+      "description": "Create an account to securely access your personal dashboard."
+    },
+    "step2": {
+      "title": "Create Mailbox",
+      "description": "Generate custom or random temporary email addresses instantly."
+    },
+    "step3": {
+      "title": "Manage Emails",
+      "description": "Receive and view emails in real-time from your dashboard."
+    },
+    "advStep1": {
+      "title": "Webhooks",
+      "description": "Receive real-time notifications to your own server when emails arrive."
+    },
+    "advStep2": {
+      "title": "OpenAPI",
+      "description": "Integrate MoeMail into your applications using our standard REST API."
+    },
+    "advStep3": {
+      "title": "Sharing",
+      "description": "Share individual emails or entire mailboxes with others easily."
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "q1": {
+      "question": "Do I need to register?",
+      "answer": "Yes, registration is required to manage your temporary mailboxes securely."
+    },
+    "q2": {
+      "question": "How long do emails last?",
+      "answer": "Emails are stored temporarily and automatically deleted after they expire."
+    },
+    "q3": {
+      "question": "Can I send emails?",
+      "answer": "Sending functionality is available for users with appropriate permissions."
+    },
+    "q4": {
+      "question": "Can I have multiple mailboxes?",
+      "answer": "Yes, you can create and manage multiple temporary email addresses from a single account."
+    },
+    "q5": {
+      "question": "How to access OpenAPI?",
+      "answer": "You can access the OpenAPI definition at https://docs.moemail.app/api.html#openapi. Authentication requires an API Key from your profile."
+    }
   }
 }
-

@@ -13,8 +13,17 @@
     "login": "ログイン",
     "profile": "プロフィール",
     "logout": "ログアウト",
-    "backToMailbox": "メールボックスに戻る"
+    "backToMailbox": "メールボックスに戻る",
+    "about": "私たちについて",
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約",
+    "blog": "ブログ"
+  },
+  "footer": {
+    "copyright": "© {year} MoeMail. All rights reserved.",
+    "contact": "お問い合わせ",
+    "github": "GitHub",
+    "telegram": "Telegram"
   },
   "github": "ソースコードを入手"
 }
-

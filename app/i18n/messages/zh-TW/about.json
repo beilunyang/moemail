@@ -1,0 +1,34 @@
+{
+    "title": "關於 MoeMail",
+    "subtitle": "一個基於 Next.js + Cloudflare 技術棧構建的可愛臨時郵箱服務，在保護您的隱私的同時保持簡單可愛 🎉",
+    "features": {
+        "privacy": {
+            "title": "隱私優先",
+            "description": "我們不會追蹤您。安全的帳戶存取確保您的郵箱保持私密。保護您的真實郵箱地址，遠離垃圾郵件和不必要的訂閱。"
+        },
+        "speed": {
+            "title": "閃電般快速",
+            "description": "即刻獲取您的臨時郵箱地址，自動輪詢即時接收郵件通知。快速設定，只需註冊即可立即開始使用。"
+        },
+        "openSource": {
+            "title": "開源且免費",
+            "description": "我們的程式碼在 GitHub 上開源。基於 Cloudflare 構建，可實現免費自部署，無需任何費用。您可以驗證我們如何處理您的資料，甚至可以自己託管。"
+        }
+    },
+    "mission": {
+        "title": "我們的使命",
+        "content": "在數位隱私不斷受到威脅、垃圾郵件成為日常困擾的時代，MoeMail 旨在提供一個簡單有效的解決方案。我們相信每個人都應該擁有一個乾淨的收件匣，並有權在註冊一次性服務或測試不受信任的網站時保持個人電子郵件地址的私密性。MoeMail 採用現代 Web 技術構建，由 Cloudflare 邊緣網路提供支援，提供快速、安全且完全免費的臨時郵箱服務，介面可愛友好。"
+    },
+    "techStack": {
+        "title": "技術棧",
+        "content": "MoeMail 採用前沿技術構建：Next.js 框架、Cloudflare Pages 託管、D1 資料庫、NextAuth 認證、Tailwind CSS 樣式、Drizzle ORM 型別安全資料庫操作。我們透過 next-intl 支援多語言，並基於 Radix UI 元件提供現代化響應式介面。"
+    },
+    "contact": {
+        "title": "參與其中",
+        "intro": "MoeMail 是一個開源專案。如果您有建議、需要支援或想要貢獻，請造訪我們的",
+        "github": "GitHub 儲存庫",
+        "joinText": "。加入我們的",
+        "telegram": "Telegram 社群 @moecloudflare",
+        "outro": "以獲取最新動態。"
+    }
+}
