@@ -278,7 +278,13 @@ const pushPagesSecret = () => {
   console.log("🔐 Pushing environment secrets to Pages...");
 
   // 定义运行时所需的环境变量列表
-  const runtimeEnvVars = ['AUTH_GITHUB_ID', 'AUTH_GITHUB_SECRET', 'AUTH_GOOGLE_ID', 'AUTH_GOOGLE_SECRET', 'AUTH_SECRET'];
+  const runtimeEnvVars = [
+    'AUTH_GITHUB_ID', 
+    'AUTH_GITHUB_SECRET', 
+    'AUTH_GOOGLE_ID', 
+    'AUTH_GOOGLE_SECRET', 
+    'AUTH_SECRET'
+  ];
 
   try {
     // 确保.env文件存在
@@ -286,41 +292,74 @@ const pushPagesSecret = () => {
       setupEnvFile();
     }
 
-    // 创建一个临时文件，只包含运行时所需的环境变量
+    // 读取.env文件内容
     const envContent = readFileSync(resolve('.env'), 'utf-8');
-    const runtimeEnvFile = resolve('.env.runtime');
+    
+    // 解析环境变量为对象
+    const secrets: Record<string, string> = {};
+    
+    envContent.split('\n').forEach(line => {
+      const trimmedLine = line.trim();
+      
+      // 跳过注释和空行
+      if (!trimmedLine || trimmedLine.startsWith('#')) {
+        return;
+      }
+      
+      // 解析键值对
+      const equalIndex = trimmedLine.indexOf('=');
+      if (equalIndex === -1) {
+        return;
+      }
+      
+      const key = trimmedLine.substring(0, equalIndex).trim();
+      let value = trimmedLine.substring(equalIndex + 1).trim();
+      
+      // 移除引号
+      value = value.replace(/^["']|["']$/g, '');
+      
+      // 只保留运行时所需的环境变量，且值不为空
+      if (runtimeEnvVars.includes(key) && value.length > 0) {
+        secrets[key] = value;
+      }
+    });
 
-    // 从.env文件中提取运行时变量
-    const runtimeEnvContent = envContent
-      .split('\n')
-      .filter(line => {
-        const trimmedLine = line.trim();
-        // 跳过注释和空行
-        if (!trimmedLine || trimmedLine.startsWith('#')) return false;
+    // 检查是否有需要推送的secrets
+    if (Object.keys(secrets).length === 0) {
+      console.log("⚠️ No runtime secrets found to push");
+      return;
+    }
 
-        // 检查是否为运行时所需的环境变量
-        for (const varName of runtimeEnvVars) {
-          if (line.startsWith(`${varName} =`) || line.startsWith(`${varName}=`)) {
-            const value = line.substring(line.indexOf('=') + 1).trim().replace(/^["']|["']$/g, '');
-            return value.length > 0;
-          }
-        }
-        return false;
-      })
-      .join('\n');
+    // 创建JSON格式的临时文件
+    const runtimeEnvFile = resolve('.env.runtime.json');
+    writeFileSync(runtimeEnvFile, JSON.stringify(secrets, null, 2));
 
-    // 写入临时文件
-    writeFileSync(runtimeEnvFile, runtimeEnvContent);
+    console.log(`📝 Found ${Object.keys(secrets).length} secrets to push:`, Object.keys(secrets).join(', '));
 
     // 使用临时文件推送secrets
-    execSync(`pnpm dlx wrangler pages secret bulk ${runtimeEnvFile}`, { stdio: "inherit" });
+    execSync(`pnpm dlx wrangler pages secret bulk ${runtimeEnvFile}`, { 
+      stdio: "inherit" 
+    });
 
     // 清理临时文件
-    execSync(`rm ${runtimeEnvFile}`, { stdio: "inherit" });
+    if (existsSync(runtimeEnvFile)) {
+      execSync(`rm ${runtimeEnvFile}`, { stdio: "inherit" });
+    }
 
     console.log("✅ Secrets pushed successfully");
   } catch (error) {
     console.error("❌ Failed to push secrets:", error);
+    
+    // 确保清理临时文件
+    const runtimeEnvFile = resolve('.env.runtime.json');
+    if (existsSync(runtimeEnvFile)) {
+      try {
+        execSync(`rm ${runtimeEnvFile}`, { stdio: "inherit" });
+      } catch (cleanupError) {
+        console.error("⚠️ Failed to cleanup temporary file:", cleanupError);
+      }
+    }
+    
     throw error;
   }
 };
