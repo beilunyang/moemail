@@ -6,10 +6,8 @@ import { resolve } from "node:path";
 import {
   createDatabase,
   createKVNamespace,
-  createPages,
   getDatabase,
   getKVNamespaceList,
-  getPages,
 } from "./cloudflare";
 
 const PROJECT_NAME = process.env.PROJECT_NAME || "moemail";
@@ -243,39 +241,10 @@ const checkAndCreateKVNamespace = async () => {
 };
 
 /**
- * 检查并创建Pages项目
+ * 推送Worker密钥
  */
-const checkAndCreatePages = async () => {
-  console.log(`🔍 Checking if project "${PROJECT_NAME}" exists...`);
-
-  try {
-    await getPages();
-    console.log("✅ Project already exists, proceeding with update...");
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      console.log("⚠️ Project not found, creating new project...");
-      const pages = await createPages();
-
-      if (!CUSTOM_DOMAIN && pages.subdomain) {
-        console.log("⚠️ CUSTOM_DOMAIN is empty, using pages default domain...");
-        console.log("📝 Updating environment variables...");
-
-        // 更新环境变量为默认的Pages域名
-        const appUrl = `https://${pages.subdomain}`;
-        updateEnvVar("CUSTOM_DOMAIN", appUrl);
-      }
-    } else {
-      console.error(`❌ An error occurred while checking the project:`, error);
-      throw error;
-    }
-  }
-};
-
-/**
- * 推送Pages密钥
- */
-const pushPagesSecret = () => {
-  console.log("🔐 Pushing environment secrets to Pages...");
+const pushWorkerSecrets = () => {
+  console.log("🔐 Pushing environment secrets to Worker...");
 
   // 定义运行时所需的环境变量列表
   const runtimeEnvVars = [
@@ -336,8 +305,8 @@ const pushPagesSecret = () => {
 
     console.log(`📝 Found ${Object.keys(secrets).length} secrets to push:`, Object.keys(secrets).join(', '));
 
-    // 使用临时文件推送secrets
-    execSync(`pnpm dlx wrangler pages secret bulk ${runtimeEnvFile}`, { 
+    // 使用临时文件推送secrets到Worker
+    execSync(`pnpm dlx wrangler secret bulk ${runtimeEnvFile} --name ${PROJECT_NAME}`, { 
       stdio: "inherit" 
     });
 
@@ -365,15 +334,15 @@ const pushPagesSecret = () => {
 };
 
 /**
- * 部署Pages应用
+ * 部署主Worker
  */
-const deployPages = () => {
-  console.log("🚧 Deploying to Cloudflare Pages...");
+const deployMainWorker = () => {
+  console.log("🚧 Deploying Main Worker...");
   try {
-    execSync("pnpm run deploy:pages", { stdio: "inherit" });
-    console.log("✅ Pages deployment completed successfully");
+    execSync(`pnpm run deploy:worker -- --name ${PROJECT_NAME} ${CUSTOM_DOMAIN ? `--route ${CUSTOM_DOMAIN}/*` : ''}`, { stdio: "inherit" });
+    console.log("✅ Main Worker deployed successfully");
   } catch (error) {
-    console.error("❌ Pages deployment failed:", error);
+    console.error("❌ Main Worker deployment failed:", error);
     throw error;
   }
 };
@@ -482,9 +451,8 @@ const main = async () => {
     await checkAndCreateDatabase();
     migrateDatabase();
     await checkAndCreateKVNamespace();
-    await checkAndCreatePages();
-    pushPagesSecret();
-    deployPages();
+    deployMainWorker();
+    pushWorkerSecrets(); 
     deployEmailWorker();
     deployCleanupWorker();
 
