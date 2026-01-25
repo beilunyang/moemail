@@ -4,7 +4,6 @@ import { roles, userRoles } from "@/lib/schema";
 import { ROLES } from "@/lib/permissions";
 import { eq } from "drizzle-orm";
 
-export const runtime = "edge";
 
 export async function GET() {
   const session = await auth();

@@ -11,7 +11,6 @@ import { zpix } from "../fonts"
 import "../globals.css"
 import { Providers } from "../providers"
 
-export const runtime = "edge"
 
 export const viewport: Viewport = {
   themeColor: '#826DD9',

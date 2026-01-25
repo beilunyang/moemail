@@ -3,7 +3,6 @@ import { messageShares, messages } from "@/lib/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
-export const runtime = "edge"
 
 // 通过分享token获取消息详情
 export async function GET(

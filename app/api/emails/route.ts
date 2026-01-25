@@ -5,7 +5,6 @@ import { emails } from "@/lib/schema"
 import { encodeCursor, decodeCursor } from "@/lib/cursor"
 import { getUserId } from "@/lib/apiKey"
 
-export const runtime = "edge"
 
 const PAGE_SIZE = 20
 

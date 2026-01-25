@@ -7,7 +7,6 @@ import { checkPermission } from "@/lib/auth"
 import { PERMISSIONS } from "@/lib/permissions"
 import type { Locale } from "@/i18n/config"
 
-export const runtime = "edge"
 
 export default async function MoePage({
   params,

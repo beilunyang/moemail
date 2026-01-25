@@ -3,7 +3,6 @@ import { emailShares } from "@/lib/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
-export const runtime = "edge"
 
 // 通过分享token获取邮箱信息
 export async function GET(

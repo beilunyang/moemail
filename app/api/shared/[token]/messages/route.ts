@@ -4,7 +4,6 @@ import { eq, and, lt, or, sql, ne, isNull } from "drizzle-orm"
 import { NextResponse } from "next/server"
 import { encodeCursor, decodeCursor } from "@/lib/cursor"
 
-export const runtime = "edge"
 
 const PAGE_SIZE = 20
 

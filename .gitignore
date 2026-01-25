@@ -51,3 +51,6 @@ public/sw.js
 wrangler.json
 wrangler.cleanup.json
 wrangler.email.json
+
+.open-next
+.pnpm-store/

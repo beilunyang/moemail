@@ -6,7 +6,6 @@ import { encodeCursor, decodeCursor } from "@/lib/cursor"
 import { getUserId } from "@/lib/apiKey"
 import { checkBasicSendPermission } from "@/lib/send-permissions"
 
-export const runtime = "edge"
 
 export async function DELETE(
   request: Request,

@@ -3,7 +3,6 @@ import { createDb } from "@/lib/db"
 import { messages, emails } from "@/lib/schema"
 import { and, eq } from "drizzle-orm"
 import { getUserId } from "@/lib/apiKey"
-export const runtime = "edge"
 
 export async function DELETE(
     request: Request,

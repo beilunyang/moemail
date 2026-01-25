@@ -6,7 +6,6 @@ import { checkPermission } from "@/lib/auth"
 import { PERMISSIONS } from "@/lib/permissions"
 import { eq, and } from "drizzle-orm"
 
-export const runtime = "edge"
 
 export async function DELETE(
   _request: Request,

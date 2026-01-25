@@ -7,7 +7,6 @@ import { checkPermission } from "@/lib/auth"
 import { PERMISSIONS } from "@/lib/permissions"
 import { desc, eq } from "drizzle-orm"
 
-export const runtime = "edge"
 
 export async function GET() {
   const hasPermission = await checkPermission(PERMISSIONS.MANAGE_API_KEY)

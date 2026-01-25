@@ -4,7 +4,6 @@ import { redirect } from "next/navigation"
 import type { Locale } from "@/i18n/config"
 import { getTurnstileConfig } from "@/lib/turnstile"
 
-export const runtime = "edge"
 
 export default async function LoginPage({
   params,

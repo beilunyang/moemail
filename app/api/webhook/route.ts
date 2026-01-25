@@ -4,7 +4,6 @@ import { webhooks } from "@/lib/schema"
 import { eq } from "drizzle-orm"
 import { z } from "zod"
 
-export const runtime = "edge"
 
 const webhookSchema = z.object({
   url: z.string().url(),

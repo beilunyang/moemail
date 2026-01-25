@@ -1,7 +1,7 @@
 import { createDb } from "@/lib/db"
 import { userRoles, roles, messages, emails } from "@/lib/schema"
 import { eq, and, gte } from "drizzle-orm"
-import { getRequestContext } from "@cloudflare/next-on-pages"
+import { getCloudflareContext } from "@opennextjs/cloudflare"
 import { EMAIL_CONFIG } from "@/config"
 
 export interface SendPermissionResult {
@@ -15,7 +15,7 @@ export async function checkSendPermission(
   skipDailyLimitCheck = false
 ): Promise<SendPermissionResult> {
   try {
-    const env = getRequestContext().env
+    const { env } = getCloudflareContext()
     const enabled = await env.SITE_CONFIG.get("EMAIL_SERVICE_ENABLED")
 
     if (enabled !== "true") {
@@ -91,7 +91,7 @@ async function getUserDailyLimit(userId: string): Promise<number> {
 
     const userRoleNames = userRoleData.map(r => r.roleName)
 
-    const env = getRequestContext().env
+    const { env } = getCloudflareContext()
     const roleLimitsStr = await env.SITE_CONFIG.get("EMAIL_ROLE_LIMITS")
     
     const customLimits = roleLimitsStr ? JSON.parse(roleLimitsStr) : {}

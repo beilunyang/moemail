@@ -6,7 +6,6 @@ import { FeatureCard } from "@/components/home/feature-card"
 import { getTranslations } from "next-intl/server"
 import type { Locale } from "@/i18n/config"
 
-export const runtime = "edge"
 
 export default async function Home({
   params,

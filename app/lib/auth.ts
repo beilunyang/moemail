@@ -5,7 +5,7 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import { createDb, Db } from "./db"
 import { accounts, users, roles, userRoles } from "./schema"
 import { eq } from "drizzle-orm"
-import { getRequestContext } from "@cloudflare/next-on-pages"
+import { getCloudflareContext } from "@opennextjs/cloudflare"
 import { Permission, hasPermission, ROLES, Role } from "./permissions"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { hashPassword, comparePassword } from "@/lib/utils"
@@ -22,7 +22,8 @@ const ROLE_DESCRIPTIONS: Record<Role, string> = {
 }
 
 const getDefaultRole = async (): Promise<Role> => {
-  const defaultRole = await getRequestContext().env.SITE_CONFIG.get("DEFAULT_ROLE")
+  const { env } = getCloudflareContext()
+  const defaultRole = await env.SITE_CONFIG.get("DEFAULT_ROLE")
 
   if (
     defaultRole === ROLES.DUKE ||
@@ -95,6 +96,8 @@ export const {
   signOut
 } = NextAuth(() => ({
   secret: process.env.AUTH_SECRET,
+  trustHost: true,
+  useSecureCookies: true,
   adapter: DrizzleAdapter(createDb(), {
     usersTable: users,
     accountsTable: accounts,

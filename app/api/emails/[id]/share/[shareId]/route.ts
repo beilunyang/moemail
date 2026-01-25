@@ -4,7 +4,6 @@ import { eq, and } from "drizzle-orm"
 import { NextResponse } from "next/server"
 import { getUserId } from "@/lib/apiKey"
 
-export const runtime = "edge"
 
 // 删除分享链接
 export async function DELETE(

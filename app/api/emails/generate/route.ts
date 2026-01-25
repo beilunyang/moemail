@@ -5,16 +5,15 @@ import { emails } from "@/lib/schema"
 import { eq, and, gt, sql } from "drizzle-orm"
 import { EXPIRY_OPTIONS } from "@/types/email"
 import { EMAIL_CONFIG } from "@/config"
-import { getRequestContext } from "@cloudflare/next-on-pages"
+import { getCloudflareContext } from "@opennextjs/cloudflare"
 import { getUserId } from "@/lib/apiKey"
 import { getUserRole } from "@/lib/auth"
 import { ROLES } from "@/lib/permissions"
 
-export const runtime = "edge"
 
 export async function POST(request: Request) {
   const db = createDb()
-  const env = getRequestContext().env
+  const { env } = getCloudflareContext()
 
   const userId = await getUserId()
   const userRole = await getUserRole(userId!)

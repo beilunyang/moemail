@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { checkSendPermission } from "@/lib/send-permissions"
 
-export const runtime = "edge"
 
 export async function GET() {
   try {

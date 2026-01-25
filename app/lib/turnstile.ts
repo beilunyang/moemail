@@ -1,4 +1,4 @@
-import { getRequestContext } from "@cloudflare/next-on-pages"
+import { getCloudflareContext } from "@opennextjs/cloudflare"
 
 interface TurnstileConfig {
   enabled: boolean
@@ -7,7 +7,7 @@ interface TurnstileConfig {
 }
 
 export async function getTurnstileConfig(): Promise<TurnstileConfig> {
-  const env = getRequestContext().env
+  const { env } = getCloudflareContext()
   const [enabled, siteKey, secretKey] = await Promise.all([
     env.SITE_CONFIG.get("TURNSTILE_ENABLED"),
     env.SITE_CONFIG.get("TURNSTILE_SITE_KEY"),

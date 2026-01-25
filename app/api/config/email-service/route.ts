@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server"
-import { getRequestContext } from "@cloudflare/next-on-pages"
+import { getCloudflareContext } from "@opennextjs/cloudflare"
 import { checkPermission } from "@/lib/auth"
 import { PERMISSIONS } from "@/lib/permissions"
 import { EMAIL_CONFIG } from "@/config"
 
-export const runtime = "edge"
 
 interface EmailServiceConfig {
   enabled: boolean
@@ -25,7 +24,7 @@ export async function GET() {
   }
 
   try {
-    const env = getRequestContext().env
+    const { env } = getCloudflareContext()
     const [enabled, apiKey, roleLimits] = await Promise.all([
       env.SITE_CONFIG.get("EMAIL_SERVICE_ENABLED"),
       env.SITE_CONFIG.get("RESEND_API_KEY"),
@@ -72,7 +71,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const env = getRequestContext().env
+    const { env } = getCloudflareContext()
     
     const customLimits: { duke?: number; knight?: number } = {}
     if (config.roleLimits?.duke !== undefined) {
