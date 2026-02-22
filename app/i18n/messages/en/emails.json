@@ -28,7 +28,8 @@
     "deleteSuccess": "Email deleted successfully",
     "deleteFailed": "Failed to delete email",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "searchPlaceholder": "Search address, subject, sender..."
   },
   "create": {
     "title": "Create Email",

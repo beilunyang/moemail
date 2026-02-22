@@ -28,7 +28,8 @@
     "deleteSuccess": "邮箱已删除",
     "deleteFailed": "删除邮箱失败",
     "error": "错误",
-    "success": "成功"
+    "success": "成功",
+    "searchPlaceholder": "搜索地址、主题、发件人..."
   },
   "create": {
     "title": "创建邮箱",
