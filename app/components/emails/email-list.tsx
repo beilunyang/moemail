@@ -75,28 +75,40 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
     setSearch('')
     setDebouncedSearch('')
     if (debounceTimer.current) clearTimeout(debounceTimer.current)
+    // Reset list to show all emails
+    setEmails([])
+    setNextCursor(null)
+    setLoading(true)
+    fetchEmails(undefined, '')
   }, [])
 
-  const fetchEmails = async (cursor?: string) => {
+  const fetchEmails = async (cursor?: string, searchQuery?: string) => {
     try {
       const url = new URL("/api/emails", window.location.origin)
       if (cursor) {
         url.searchParams.set('cursor', cursor)
       }
-      if (debouncedSearch) {
-        url.searchParams.set('search', debouncedSearch)
+      const currentSearch = searchQuery ?? debouncedSearch
+      if (currentSearch) {
+        url.searchParams.set('search', currentSearch)
       }
       const response = await fetch(url)
       const data = await response.json() as EmailResponse
       
-      if (!cursor) {
+      if (cursor) {
+        // Pagination: append
+        setEmails(prev => [...prev, ...data.emails])
+      } else if (currentSearch) {
+        // Search: replace entirely
         setEmails(data.emails)
-        setNextCursor(data.nextCursor)
-        setTotal(data.total)
-        return
+      } else {
+        // Non-search refresh: merge new emails into existing list
+        setEmails(prev => {
+          const existingIds = new Set(prev.map(e => e.id))
+          const newEmails = data.emails.filter((e: Email) => !existingIds.has(e.id))
+          return [...newEmails, ...prev]
+        })
       }
-
-      setEmails(prev => [...prev, ...data.emails])
       setNextCursor(data.nextCursor)
       setTotal(data.total)
     } catch (error) {
@@ -132,10 +144,12 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
 
 
   useEffect(() => {
+    if (!session) return
+    if (!debouncedSearch) return
     setEmails([])
     setNextCursor(null)
     setLoading(true)
-    fetchEmails()
+    fetchEmails(undefined, debouncedSearch)
   }, [debouncedSearch])
 
   const handleDelete = async (email: Email) => {
