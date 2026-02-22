@@ -26,8 +26,8 @@ export async function GET(request: Request) {
 
     // When search is active, use JOIN to search across emails + messages
     if (search) {
-      const searchPattern = `%${search.toLowerCase()}%`
-
+      const escaped = search.toLowerCase().replace(/[%_]/g, '\\$&')
+      const searchPattern = `%${escaped}%`
       const searchCondition = or(
         sql`LOWER(${emails.address}) LIKE ${searchPattern}`,
         sql`LOWER(${messages.subject}) LIKE ${searchPattern}`,
@@ -37,12 +37,11 @@ export async function GET(request: Request) {
 
       // Count matching emails
       const totalResult = await db
-        .selectDistinct({ id: emails.id })
+        .select({ count: sql<number>`COUNT(DISTINCT ${emails.id})` })
         .from(emails)
         .leftJoin(messages, eq(messages.emailId, emails.id))
         .where(and(baseConditions, searchCondition))
-
-      const totalCount = totalResult.length
+      const totalCount = Number(totalResult[0].count)
 
       // Build cursor condition
       const cursorConditions = []
