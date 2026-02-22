@@ -1,14 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { useTranslations } from "next-intl"
 import { CreateDialog } from "./create-dialog"
 import { ShareDialog } from "./share-dialog"
-import { Mail, RefreshCw, Trash2 } from "lucide-react"
+import { Mail, RefreshCw, Trash2, Search, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useThrottle } from "@/hooks/use-throttle"
+import { Input } from "@/components/ui/input"
 import { EMAIL_CONFIG } from "@/config"
 import { useToast } from "@/components/ui/use-toast"
 import {
@@ -58,34 +59,43 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
   const [emailToDelete, setEmailToDelete] = useState<Email | null>(null)
   const { toast } = useToast()
 
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const debounceTimer = useRef<ReturnType<typeof setTimeout>>(null)
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value)
+    if (debounceTimer.current) clearTimeout(debounceTimer.current)
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedSearch(value)
+    }, 300)
+  }, [])
+
+  const clearSearch = useCallback(() => {
+    setSearch('')
+    setDebouncedSearch('')
+    if (debounceTimer.current) clearTimeout(debounceTimer.current)
+  }, [])
+
   const fetchEmails = async (cursor?: string) => {
     try {
       const url = new URL("/api/emails", window.location.origin)
       if (cursor) {
         url.searchParams.set('cursor', cursor)
       }
+      if (debouncedSearch) {
+        url.searchParams.set('search', debouncedSearch)
+      }
       const response = await fetch(url)
       const data = await response.json() as EmailResponse
       
       if (!cursor) {
-        const newEmails = data.emails
-        const oldEmails = emails
-
-        const lastDuplicateIndex = newEmails.findIndex(
-          newEmail => oldEmails.some(oldEmail => oldEmail.id === newEmail.id)
-        )
-
-        if (lastDuplicateIndex === -1) {
-          setEmails(newEmails)
-          setNextCursor(data.nextCursor)
-          setTotal(data.total)
-          return
-        }
-        const uniqueNewEmails = newEmails.slice(0, lastDuplicateIndex)
-        setEmails([...uniqueNewEmails, ...oldEmails])
+        setEmails(data.emails)
+        setNextCursor(data.nextCursor)
         setTotal(data.total)
         return
       }
+
       setEmails(prev => [...prev, ...data.emails])
       setNextCursor(data.nextCursor)
       setTotal(data.total)
@@ -119,6 +129,14 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
   useEffect(() => {
     if (session) fetchEmails()
   }, [session])
+
+
+  useEffect(() => {
+    setEmails([])
+    setNextCursor(null)
+    setLoading(true)
+    fetchEmails()
+  }, [debouncedSearch])
 
   const handleDelete = async (email: Email) => {
     try {
@@ -185,6 +203,27 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
           <CreateDialog onEmailCreated={handleRefresh} />
         </div>
         
+        <div className="px-2 pb-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder={t("searchPlaceholder")}
+              className="h-8 pl-7 pr-7 text-xs"
+            />
+            {search && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-8 w-8"
+                onClick={clearSearch}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
+        </div>
         <div className="flex-1 overflow-auto p-2" onScroll={handleScroll}>
           {loading ? (
             <div className="text-center text-sm text-gray-500">{t("loading")}</div>
