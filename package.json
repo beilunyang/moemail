@@ -69,6 +69,6 @@
     "tsx": "^4.19.3",
     "typescript": "^5",
     "vercel": "39.1.1",
-    "wrangler": "^3.91.0"
+    "wrangler": "^4.72.0"
   }
 }
