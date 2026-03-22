@@ -5,6 +5,7 @@ import { registerCreateCommand } from "./commands/create.js";
 import { registerListCommand } from "./commands/list.js";
 import { registerWaitCommand } from "./commands/wait.js";
 import { registerReadCommand } from "./commands/read.js";
+import { registerDeleteCommand } from "./commands/delete.js";
 
 const program = new Command();
 
@@ -19,5 +20,6 @@ registerCreateCommand(program);
 registerListCommand(program);
 registerWaitCommand(program);
 registerReadCommand(program);
+registerDeleteCommand(program);
 
 program.parse();
