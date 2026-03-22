@@ -1,0 +1,24 @@
+# MoeMail
+
+> Temporary email service with CLI tool for AI Agents
+
+MoeMail provides disposable email addresses. Install the CLI for programmatic access:
+
+## CLI Tool
+
+Install: npm i -g moemail-cli
+
+Setup: moemail config set api-url https://moemail.app && moemail config set api-key YOUR_KEY
+
+Commands:
+- moemail create --domain <domain> --expiry <1h|24h|3d|permanent> --json
+- moemail list --json
+- moemail list --email-id <id> --json
+- moemail wait --email-id <id> --timeout <seconds> --json
+- moemail read --email-id <id> --message-id <id> --json
+- moemail send --email-id <id> --to <addr> --subject <subj> --content <body> --json
+- moemail delete --email-id <id> --json
+
+Typical workflow: create email → use address for signup → wait for verification → read content → extract code → delete
+
+All commands support --json for structured output. Exit code 0 = success, 1 = failure, 2 = auth error.
