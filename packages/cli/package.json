@@ -1,0 +1,19 @@
+{
+  "name": "moemail-cli",
+  "version": "0.1.0",
+  "description": "Agent-first CLI for MoeMail temporary email service",
+  "type": "module",
+  "bin": {
+    "moemail": "dist/index.js"
+  },
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target=node",
+    "dev": "bun run ./src/index.ts"
+  },
+  "files": ["dist"],
+  "keywords": ["email", "temporary", "cli", "agent", "ai"],
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.0.0"
+  }
+}
