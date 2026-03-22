@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { getUserId } from "@/lib/apiKey"
 import { createDb } from "@/lib/db"
 import { emails, messages } from "@/lib/schema"
 import { eq } from "drizzle-orm"
@@ -49,8 +49,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
+    const userId = await getUserId()
+    if (!userId) {
       return NextResponse.json(
         { error: "未授权" },
         { status: 401 }
@@ -60,7 +60,7 @@ export async function POST(
     const { id } = await params
     const db = createDb()
 
-    const permissionResult = await checkSendPermission(session.user.id)
+    const permissionResult = await checkSendPermission(userId)
     if (!permissionResult.canSend) {
       return NextResponse.json(
         { error: permissionResult.error },
@@ -90,7 +90,7 @@ export async function POST(
       )
     }
 
-    if (email.userId !== session.user.id) {
+    if (email.userId !== userId) {
       return NextResponse.json(
         { error: "无权访问此邮箱" },
         { status: 403 }
