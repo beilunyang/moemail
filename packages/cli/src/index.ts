@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { registerConfigCommand } from "./commands/config.js";
 import { registerCreateCommand } from "./commands/create.js";
 import { registerListCommand } from "./commands/list.js";
+import { registerWaitCommand } from "./commands/wait.js";
 
 const program = new Command();
 
@@ -15,5 +16,6 @@ program
 registerConfigCommand(program);
 registerCreateCommand(program);
 registerListCommand(program);
+registerWaitCommand(program);
 
 program.parse();
