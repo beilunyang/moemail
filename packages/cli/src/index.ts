@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { registerConfigCommand } from "./commands/config.js";
+import { registerCreateCommand } from "./commands/create.js";
 
 const program = new Command();
 
@@ -11,5 +12,6 @@ program
   .option("--json", "output as JSON");
 
 registerConfigCommand(program);
+registerCreateCommand(program);
 
 program.parse();
