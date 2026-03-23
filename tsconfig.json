@@ -36,6 +36,7 @@
   ],
   "exclude": [
     "node_modules",
-    "docs"
+    "docs",
+    "packages/cli"
   ]
 }
