@@ -16,7 +16,7 @@
     "test:cleanup": "curl http://localhost:8787/__scheduled",
     "deploy:email": "wrangler deploy --config wrangler.email.json",
     "deploy:cleanup": "wrangler deploy --config wrangler.cleanup.json",
-    "deploy:pages": "npm run build:pages && wrangler pages deploy .vercel/output/static --branch main"
+    "deploy:pages": "npm run build:pages && pnpm dlx wrangler@3 pages deploy .vercel/output/static --branch main"
   },
   "type": "module",
   "dependencies": {
@@ -69,6 +69,6 @@
     "tsx": "^4.19.3",
     "typescript": "^5",
     "vercel": "39.1.1",
-    "wrangler": "^3.91.0"
+    "wrangler": "^4.72.0"
   }
 }
