@@ -31,10 +31,13 @@
     "success": "成功"
   },
   "create": {
-    "title": "建立郵箱",
-    "name": "郵箱前綴",
-    "namePlaceholder": "留空則隨機生成",
-    "domain": "網域",
+  "title": "建立郵箱",
+  "name": "郵箱前綴",
+  "namePlaceholder": "留空則隨機生成",
+  "subdomain": "子網域",
+  "subdomainPlaceholder": "選填，例如 team",
+  "invalidSubdomain": "子網域格式無效",
+  "domain": "網域",
     "domainPlaceholder": "選擇網域",
     "expiryTime": "有效期",
     "oneHour": "1 小時",

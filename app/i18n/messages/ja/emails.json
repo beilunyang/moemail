@@ -31,10 +31,13 @@
     "success": "成功"
   },
   "create": {
-    "title": "メールボックスを作成",
-    "name": "メールボックスのプレフィックス",
-    "namePlaceholder": "空白の場合はランダムに生成",
-    "domain": "ドメイン",
+  "title": "メールボックスを作成",
+  "name": "メールボックスのプレフィックス",
+  "namePlaceholder": "空白の場合はランダムに生成",
+  "subdomain": "サブドメイン",
+  "subdomainPlaceholder": "任意、例: team",
+  "invalidSubdomain": "サブドメインの形式が正しくありません",
+  "domain": "ドメイン",
     "domainPlaceholder": "ドメインを選択",
     "expiryTime": "有効期間",
     "oneHour": "1時間",

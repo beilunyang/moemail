@@ -17,7 +17,7 @@ moemail config --domain moemail.app
 
 ### 2. Create a temporary email
 ```bash
-moemail create --expiry 1h
+moemail create --domain moemail.app --subdomain team --expiry 1h
 ```
 
 ### 3. Wait for messages
@@ -30,7 +30,7 @@ moemail wait --email-id <email_id> --timeout 120
 | Command | Description | Key Flags |
 |---------|-------------|-----------|
 | `config` | Set default domain and options | `--domain <domain>`, `--expiry <duration>` |
-| `create` | Create a temporary email address | `--domain <domain>`, `--expiry <duration>`, `--json` |
+| `create` | Create a temporary email address | `--domain <domain>`, `--subdomain <label>`, `--expiry <duration>`, `--json` |
 | `list` | List all temporary emails | `--json` |
 | `wait` | Wait for incoming messages | `--email-id <id>`, `--timeout <seconds>`, `--json` |
 | `read` | Read email message content | `--email-id <id>`, `--message-id <id>`, `--json` |
@@ -44,7 +44,7 @@ The CLI is designed to support agent-first automation. Here's a typical workflow
 
 ```bash
 # Create temporary email and extract details
-EMAIL=$(moemail create --domain moemail.app --expiry 1h --json)
+EMAIL=$(moemail create --domain moemail.app --subdomain team --expiry 1h --json)
 EMAIL_ID=$(echo $EMAIL | jq -r '.id')
 ADDRESS=$(echo $EMAIL | jq -r '.address')
 

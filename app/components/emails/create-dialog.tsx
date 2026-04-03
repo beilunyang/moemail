@@ -14,6 +14,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EXPIRY_OPTIONS } from "@/types/email"
 import { useCopy } from "@/hooks/use-copy"
 import { useConfig } from "@/hooks/use-config"
+import {
+  buildMailboxAddress,
+  isValidSubdomainLabel,
+  normalizeSubdomain,
+} from "@/lib/email-address"
 
 interface CreateDialogProps {
   onEmailCreated: () => void
@@ -27,15 +32,20 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [emailName, setEmailName] = useState("")
+  const [subdomain, setSubdomain] = useState("")
   const [currentDomain, setCurrentDomain] = useState("")
   const [expiryTime, setExpiryTime] = useState(EXPIRY_OPTIONS[1].value.toString())
   const { toast } = useToast()
   const { copyToClipboard } = useCopy()
+  const normalizedSubdomain = normalizeSubdomain(subdomain)
+  const previewAddress = emailName && currentDomain
+    ? buildMailboxAddress(emailName, currentDomain, normalizedSubdomain)
+    : ""
 
   const generateRandomName = () => setEmailName(nanoid(8))
 
   const copyEmailAddress = () => {
-    copyToClipboard(`${emailName}@${currentDomain}`)
+    copyToClipboard(previewAddress)
   }
 
   const createEmail = async () => {
@@ -43,6 +53,15 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
       toast({
         title: tList("error"),
         description: t("namePlaceholder"),
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (normalizedSubdomain && !isValidSubdomainLabel(normalizedSubdomain)) {
+      toast({
+        title: tList("error"),
+        description: t("invalidSubdomain"),
         variant: "destructive"
       })
       return
@@ -56,6 +75,7 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
         body: JSON.stringify({
           name: emailName,
           domain: currentDomain,
+          subdomain: normalizedSubdomain || undefined,
           expiryTime: parseInt(expiryTime)
         })
       })
@@ -77,6 +97,7 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
       onEmailCreated()
       setOpen(false)
       setEmailName("")
+      setSubdomain("")
     } catch {
       toast({
         title: tList("error"),
@@ -114,6 +135,23 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
               placeholder={t("namePlaceholder")}
               className="flex-1"
             />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={generateRandomName}
+              type="button"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <div className="flex gap-2">
+            <Input
+              value={subdomain}
+              onChange={(e) => setSubdomain(e.target.value)}
+              placeholder={t("subdomainPlaceholder")}
+              className="flex-1"
+            />
             {(config?.emailDomainsArray?.length ?? 0) > 1 && (
               <Select value={currentDomain} onValueChange={setCurrentDomain}>
                 <SelectTrigger className="w-[180px]">
@@ -126,14 +164,11 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
                 </SelectContent>
               </Select>
             )}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={generateRandomName}
-              type="button"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </Button>
+            {(config?.emailDomainsArray?.length ?? 0) <= 1 && (
+              <div className="flex min-w-[180px] items-center rounded-md border px-3 text-sm text-muted-foreground">
+                @{currentDomain || t("domainPlaceholder")}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -159,9 +194,9 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="shrink-0">{t("domain")}:</span>
-            {emailName ? (
+            {previewAddress ? (
               <div className="flex items-center gap-2 min-w-0">
-                <span className="truncate">{`${emailName}@${currentDomain}`}</span>
+                <span className="truncate">{previewAddress}</span>
                 <div
                   className="shrink-0 cursor-pointer hover:text-primary transition-colors"
                   onClick={copyEmailAddress}
@@ -185,4 +220,4 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
       </DialogContent>
     </Dialog>
   )
-} 
+}

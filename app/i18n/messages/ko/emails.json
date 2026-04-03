@@ -31,10 +31,13 @@
     "success": "성공"
   },
   "create": {
-    "title": "이메일 생성",
-    "name": "이메일 접두사",
-    "namePlaceholder": "비워두면 무작위로 생성됩니다",
-    "domain": "도메인",
+  "title": "이메일 생성",
+  "name": "이메일 접두사",
+  "namePlaceholder": "비워두면 무작위로 생성됩니다",
+  "subdomain": "서브도메인",
+  "subdomainPlaceholder": "선택 사항, 예: team",
+  "invalidSubdomain": "서브도메인 형식이 올바르지 않습니다",
+  "domain": "도메인",
     "domainPlaceholder": "도메인 선택",
     "expiryTime": "유효 기간",
     "oneHour": "1시간",
