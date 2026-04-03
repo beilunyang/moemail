@@ -28,7 +28,8 @@
     "deleteSuccess": "郵箱已刪除",
     "deleteFailed": "刪除郵箱失敗",
     "error": "錯誤",
-    "success": "成功"
+    "success": "成功",
+    "searchPlaceholder": "搜尋地址、主題、寄件人..."
   },
   "create": {
     "title": "建立郵箱",
