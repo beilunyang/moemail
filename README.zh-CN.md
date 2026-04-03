@@ -216,6 +216,12 @@ pnpm dlx tsx ./scripts/deploy/index.ts
 在 MoeMail 个人中心页面，可以配置网站的邮箱域名，支持多域名配置，多个域名用逗号分隔
 ![邮箱域名配置](https://pic.otaku.ren/20241227/AQAD88AxG67zeVd-.jpg "邮箱域名配置")
 
+### 支持子域名后的变化
+
+- `EMAIL_DOMAINS` / 站点配置中仍然只保存**基础域名**，例如：`example.com,moemail.app`
+- 创建邮箱时，`domain` 用来选择基础域名，`subdomain` 为可选项，最终地址会变成 `user@team.example.com`
+- 除非你希望 `team.example.com` 作为一个独立可选域名直接展示，否则不需要把它单独写进 `EMAIL_DOMAINS`
+
 ### Cloudflare 邮件路由配置
 
 为了使邮箱域名生效，还需要在 Cloudflare 控制台配置邮件路由，将收到的邮件转发给 Email Worker 处理。
@@ -238,7 +244,27 @@ pnpm dlx tsx ./scripts/deploy/index.ts
 ### 注意事项
 - 确保域名的 DNS 托管在 Cloudflare
 - Email Worker 必须已经部署成功
+- 如果启用了子域名邮箱（例如 `user@team.example.com`），请确认 Cloudflare 的邮件路由规则已经覆盖这些子域名地址；如果现有 Catch-all 只覆盖修改前的基础域名场景，需要为对应子域名补充接收规则，但目标仍然指向同一个 Email Worker
 - 如果 Catch-All 状态不可用(一直 loading)，请点击`路由规则`旁边的`目标地址`, 进去绑定一个邮箱
+
+### 子域名部署清单
+
+启用邮箱子域名后，建议按下面清单逐项确认与修改前部署的差异：
+
+1. **基础域名配置**
+   - `EMAIL_DOMAINS` 里仍然填写基础域名，例如 `example.com`
+   - 除非你希望 `team.example.com` 作为独立可选域名展示，否则不要直接把它替换成子域名
+2. **Cloudflare 邮件路由**
+   - 确认收件规则也能匹配 `*@team.example.com` 这类子域名地址
+   - 子域名邮件仍然转发到原来的同一个 Email Worker
+3. **DNS / 域名托管**
+   - 确认父域名及目标子域名在当前路由方案下都已由 Cloudflare 正确托管
+4. **发件域验证**
+   - 如果需要从子域名地址发信，确认发件服务（例如 Resend）是否要求对子域名单独做验证
+5. **手动冒烟验证**
+   - 创建一个 `user@team.example.com`
+   - 向该地址发送一封测试邮件，确认 MoeMail 能正常收到
+   - 如果启用了发信能力，再从该地址发送一封测试邮件，确认能成功投递
 
 ## 权限系统
 
@@ -369,6 +395,7 @@ MoeMail 支持使用临时邮箱发送邮件，基于 [Resend](https://resend.co
 
 - 📋 **Resend 限制**：请注意 Resend 服务的发送限制和定价政策
 - 🔐 **域名验证**：使用自定义域名发件需要在 Resend 中验证域名
+- 🔐 **子域名发件**：如果要从 `user@team.example.com` 发信，还需要确认当前发件服务是否允许该子域名作为发件身份；如服务商要求，请单独验证子域名
 - 🚫 **反垃圾邮件**：请遵守邮件发送规范，避免发送垃圾邮件
 - 📊 **配额监控**：系统会自动统计每日发件数量，达到限额后将无法继续发送
 - 🔄 **配额重置**：每日发件配额在每天 00:00 自动重置
@@ -463,19 +490,21 @@ Content-Type: application/json
 {
   "name": "test",
   "expiryTime": 3600000,
-  "domain": "moemail.app"
+  "domain": "moemail.app",
+  "subdomain": "team"
 }
 ```
 参数说明：
 - `name`: 邮箱前缀，可选
 - `expiryTime`: 有效期（毫秒），可选值：3600000（1小时）、86400000（1天）、604800000（7天）、0（永久）
-- `domain`: 邮箱域名，可通过 `/api/config` 接口获取
+- `domain`: 基础域名，可通过 `/api/config` 接口获取
+- `subdomain`: 可选的单段子域名，最终地址格式为 `name@subdomain.domain`
 
 返回响应：
 ```json
 {
   "id": "email-uuid-123",
-  "email": "test@moemail.app"
+  "email": "test@team.moemail.app"
 }
 ```
 响应字段说明：
@@ -747,7 +776,8 @@ curl -X POST https://your-domain.com/api/emails/generate \
   -d '{
     "name": "test",
     "expiryTime": 3600000,
-    "domain": "moemail.app"
+    "domain": "moemail.app",
+    "subdomain": "team"
   }'
 ```
 
@@ -805,7 +835,7 @@ moemail config set api-url https://moemail.app
 moemail config set api-key YOUR_API_KEY
 
 # 创建临时邮箱
-moemail create --domain moemail.app --expiry 1h --json
+moemail create --domain moemail.app --subdomain team --expiry 1h --json
 
 # 等待新邮件（轮询）
 moemail wait --email-id <id> --timeout 120 --json
@@ -823,7 +853,7 @@ AI Agent 仅需 3 次调用即可完成验证流程：
 
 ```bash
 # 1. 创建邮箱
-EMAIL=$(moemail create --domain moemail.app --expiry 1h --json)
+EMAIL=$(moemail create --domain moemail.app --subdomain team --expiry 1h --json)
 EMAIL_ID=$(echo $EMAIL | jq -r '.id')
 ADDRESS=$(echo $EMAIL | jq -r '.address')
 

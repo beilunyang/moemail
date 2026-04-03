@@ -31,10 +31,13 @@
     "success": "成功"
   },
   "create": {
-    "title": "创建邮箱",
-    "name": "邮箱前缀",
-    "namePlaceholder": "留空则随机生成",
-    "domain": "域名",
+  "title": "创建邮箱",
+  "name": "邮箱前缀",
+  "namePlaceholder": "留空则随机生成",
+  "subdomain": "子域名",
+  "subdomainPlaceholder": "可选，例如 team",
+  "invalidSubdomain": "子域名格式无效",
+  "domain": "域名",
     "domainPlaceholder": "选择域名",
     "expiryTime": "有效期",
     "oneHour": "1 小时",
