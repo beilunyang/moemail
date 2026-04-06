@@ -16,7 +16,7 @@
     "test:cleanup": "curl http://localhost:8787/__scheduled",
     "deploy:email": "wrangler deploy --config wrangler.email.json",
     "deploy:cleanup": "wrangler deploy --config wrangler.cleanup.json",
-    "deploy:pages": "npm run build:pages && wrangler pages deploy .vercel/output/static --branch main"
+    "deploy:pages": "npm run build:pages && wrangler pages deploy .vercel/output/static --branch master"
   },
   "type": "module",
   "dependencies": {
