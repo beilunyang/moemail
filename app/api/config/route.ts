@@ -35,7 +35,7 @@ export async function GET() {
     turnstile: canManageConfig ? {
       enabled: turnstileEnabled === "true",
       siteKey: turnstileSiteKey || "",
-      secretKey: turnstileSecretKey || "",
+      secretKeyConfigured: Boolean(turnstileSecretKey),
     } : undefined
   })
 }
@@ -63,7 +63,8 @@ export async function POST(request: Request) {
     turnstile?: {
       enabled: boolean,
       siteKey: string,
-      secretKey: string
+      secretKey: string,
+      secretKeyChanged?: boolean
     }
   }
   
@@ -71,25 +72,34 @@ export async function POST(request: Request) {
     return Response.json({ error: "无效的角色" }, { status: 400 })
   }
 
+  const env = getRequestContext().env
+
   const turnstileConfig = turnstile ?? {
     enabled: false,
     siteKey: "",
-    secretKey: ""
+    secretKey: "",
+    secretKeyChanged: false,
   }
 
-  if (turnstileConfig.enabled && (!turnstileConfig.siteKey || !turnstileConfig.secretKey)) {
+  const nextTurnstileSiteKey = turnstileConfig.siteKey.trim()
+  const nextTurnstileSecretKey = turnstileConfig.secretKey.trim()
+  const existingTurnstileSecretKey = await env.SITE_CONFIG.get("TURNSTILE_SECRET_KEY") || ""
+  const turnstileSecretKeyToStore = turnstileConfig.secretKeyChanged
+    ? nextTurnstileSecretKey
+    : existingTurnstileSecretKey
+
+  if (turnstileConfig.enabled && (!nextTurnstileSiteKey || !turnstileSecretKeyToStore)) {
     return Response.json({ error: "Turnstile 启用时需要提供 Site Key 和 Secret Key" }, { status: 400 })
   }
 
-  const env = getRequestContext().env
   await Promise.all([
     env.SITE_CONFIG.put("DEFAULT_ROLE", defaultRole),
     env.SITE_CONFIG.put("EMAIL_DOMAINS", emailDomains),
     env.SITE_CONFIG.put("ADMIN_CONTACT", adminContact),
     env.SITE_CONFIG.put("MAX_EMAILS", maxEmails),
     env.SITE_CONFIG.put("TURNSTILE_ENABLED", turnstileConfig.enabled.toString()),
-    env.SITE_CONFIG.put("TURNSTILE_SITE_KEY", turnstileConfig.siteKey),
-    env.SITE_CONFIG.put("TURNSTILE_SECRET_KEY", turnstileConfig.secretKey)
+    env.SITE_CONFIG.put("TURNSTILE_SITE_KEY", nextTurnstileSiteKey),
+    env.SITE_CONFIG.put("TURNSTILE_SECRET_KEY", turnstileSecretKeyToStore)
   ])
 
   return Response.json({ success: true })

@@ -114,7 +114,9 @@
       "siteKeyPlaceholder": "Enter Turnstile Site Key",
       "secretKey": "Secret Key",
       "secretKeyPlaceholder": "Enter Turnstile Secret Key",
-      "secretKeyDescription": "Set up a Turnstile application in Cloudflare and provide the required keys before enabling"
+      "secretKeyConfiguredPlaceholder": "Secret Key already configured; leave blank to keep it",
+      "secretKeyDescription": "Set up a Turnstile application in Cloudflare and provide the required keys before enabling",
+      "secretKeyConfiguredDescription": "A Secret Key is already stored; only fill this in to replace or clear it"
     },
     "save": "Save Configuration",
     "saving": "Saving...",

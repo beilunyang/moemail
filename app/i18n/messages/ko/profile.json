@@ -114,7 +114,9 @@
       "siteKeyPlaceholder": "Turnstile Site Key 입력",
       "secretKey": "Secret Key",
       "secretKeyPlaceholder": "Turnstile Secret Key 입력",
-      "secretKeyDescription": "활성화하기 전에 Cloudflare에서 Turnstile 애플리케이션을 설정하고 필요한 키를 제공하세요"
+      "secretKeyConfiguredPlaceholder": "Secret Key가 이미 설정되어 있습니다. 유지하려면 비워 두세요",
+      "secretKeyDescription": "활성화하기 전에 Cloudflare에서 Turnstile 애플리케이션을 설정하고 필요한 키를 제공하세요",
+      "secretKeyConfiguredDescription": "현재 Secret Key가 저장되어 있습니다. 교체하거나 비울 때만 입력하세요"
     },
     "save": "설정 저장",
     "saving": "저장 중...",

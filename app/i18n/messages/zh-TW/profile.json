@@ -114,7 +114,9 @@
       "siteKeyPlaceholder": "輸入 Turnstile Site Key",
       "secretKey": "Secret Key",
       "secretKeyPlaceholder": "輸入 Turnstile Secret Key",
-      "secretKeyDescription": "請先在 Cloudflare 建立 Turnstile 並填寫上述必填參數後再啟用"
+      "secretKeyConfiguredPlaceholder": "Secret Key 已設定，留空即可保留現有值",
+      "secretKeyDescription": "請先在 Cloudflare 建立 Turnstile 並填寫上述必填參數後再啟用",
+      "secretKeyConfiguredDescription": "目前已儲存 Secret Key；只有在要替換或清除時才需重新輸入"
     },
     "save": "儲存設定",
     "saving": "儲存中...",

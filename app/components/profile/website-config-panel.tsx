@@ -29,6 +29,8 @@ export function WebsiteConfigPanel() {
   const [turnstileEnabled, setTurnstileEnabled] = useState(false)
   const [turnstileSiteKey, setTurnstileSiteKey] = useState("")
   const [turnstileSecretKey, setTurnstileSecretKey] = useState("")
+  const [turnstileSecretKeyConfigured, setTurnstileSecretKeyConfigured] = useState(false)
+  const [turnstileSecretKeyChanged, setTurnstileSecretKeyChanged] = useState(false)
   const [showSecretKey, setShowSecretKey] = useState(false)
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
@@ -49,7 +51,7 @@ export function WebsiteConfigPanel() {
         turnstile?: {
           enabled: boolean,
           siteKey: string,
-          secretKey?: string
+          secretKeyConfigured?: boolean
         }
       }
       setDefaultRole(data.defaultRole)
@@ -58,7 +60,9 @@ export function WebsiteConfigPanel() {
       setMaxEmails(data.maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString())
       setTurnstileEnabled(Boolean(data.turnstile?.enabled))
       setTurnstileSiteKey(data.turnstile?.siteKey ?? "")
-      setTurnstileSecretKey(data.turnstile?.secretKey ?? "")
+      setTurnstileSecretKey("")
+      setTurnstileSecretKeyConfigured(Boolean(data.turnstile?.secretKeyConfigured))
+      setTurnstileSecretKeyChanged(false)
     }
   }
 
@@ -76,12 +80,19 @@ export function WebsiteConfigPanel() {
           turnstile: {
             enabled: turnstileEnabled,
             siteKey: turnstileSiteKey,
-            secretKey: turnstileSecretKey
+            secretKey: turnstileSecretKey,
+            secretKeyChanged: turnstileSecretKeyChanged,
           }
         }),
       })
 
       if (!res.ok) throw new Error(t("saveFailed"))
+
+      setTurnstileSecretKeyConfigured(
+        turnstileSecretKeyChanged ? Boolean(turnstileSecretKey.trim()) : turnstileSecretKeyConfigured
+      )
+      setTurnstileSecretKey("")
+      setTurnstileSecretKeyChanged(false)
 
       toast({
         title: t("saveSuccess"),
@@ -194,8 +205,13 @@ export function WebsiteConfigPanel() {
                 id="turnstile-secret-key"
                 type={showSecretKey ? "text" : "password"}
                 value={turnstileSecretKey}
-                onChange={(e) => setTurnstileSecretKey(e.target.value)}
-                placeholder={t("turnstile.secretKeyPlaceholder")}
+                onChange={(e) => {
+                  setTurnstileSecretKey(e.target.value)
+                  setTurnstileSecretKeyChanged(true)
+                }}
+                placeholder={turnstileSecretKeyConfigured
+                  ? t("turnstile.secretKeyConfiguredPlaceholder")
+                  : t("turnstile.secretKeyPlaceholder")}
               />
               <Button
                 type="button"
@@ -208,7 +224,9 @@ export function WebsiteConfigPanel() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              {t("turnstile.secretKeyDescription")}
+              {turnstileSecretKeyConfigured
+                ? t("turnstile.secretKeyConfiguredDescription")
+                : t("turnstile.secretKeyDescription")}
             </p>
           </div>
         </div>

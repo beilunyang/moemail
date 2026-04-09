@@ -114,7 +114,9 @@
       "siteKeyPlaceholder": "Turnstile Site Key を入力",
       "secretKey": "Secret Key",
       "secretKeyPlaceholder": "Turnstile Secret Key を入力",
-      "secretKeyDescription": "Cloudflare で Turnstile を作成し、必須のキーを入力してから有効化してください"
+      "secretKeyConfiguredPlaceholder": "Secret Key は設定済みです。変更しない場合は空欄のままにしてください",
+      "secretKeyDescription": "Cloudflare で Turnstile を作成し、必須のキーを入力してから有効化してください",
+      "secretKeyConfiguredDescription": "Secret Key はすでに保存されています。置き換えまたは削除する場合のみ入力してください"
     },
     "save": "設定を保存",
     "saving": "保存中...",
