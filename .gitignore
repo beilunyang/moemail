@@ -40,14 +40,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# wrangler
 .wrangler
 wrangler.toml
 wrangler.email.toml
 wrangler.cleanup.toml
-
-public/workbox-*.js
-public/sw.js
-
 wrangler.json
 wrangler.cleanup.json
 wrangler.email.json
+
+public/workbox-*.js
+public/sw.js
