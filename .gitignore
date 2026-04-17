@@ -45,7 +45,7 @@ next-env.d.ts
 wrangler.toml
 wrangler.email.toml
 wrangler.cleanup.toml
-wrangler.json
+# wrangler.json 需要提交到 GitHub 用于 Pages 部署
 wrangler.cleanup.json
 wrangler.email.json
 
