@@ -30,7 +30,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env.local
 !.env.example
 
 # vercel
@@ -40,14 +40,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# wrangler
 .wrangler
 wrangler.toml
 wrangler.email.toml
 wrangler.cleanup.toml
+# wrangler.json 需要提交到 GitHub 用于 Pages 部署
+wrangler.cleanup.json
+wrangler.email.json
 
 public/workbox-*.js
 public/sw.js
-
-wrangler.json
-wrangler.cleanup.json
-wrangler.email.json
