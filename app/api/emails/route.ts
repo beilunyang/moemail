@@ -4,6 +4,7 @@ import { NextResponse } from "next/server"
 import { emails } from "@/lib/schema"
 import { encodeCursor, decodeCursor } from "@/lib/cursor"
 import { getUserId } from "@/lib/apiKey"
+import { canUserAccessAllEmails } from "@/lib/email-access"
 
 export const runtime = "edge"
 
@@ -11,6 +12,9 @@ const PAGE_SIZE = 20
 
 export async function GET(request: Request) {
   const userId = await getUserId()
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
   const { searchParams } = new URL(request.url)
   const cursor = searchParams.get('cursor')
@@ -18,10 +22,13 @@ export async function GET(request: Request) {
   const db = createDb()
 
   try {
-    const baseConditions = and(
-      eq(emails.userId, userId!),
-      gt(emails.expiresAt, new Date())
-    )
+    const canAccessAll = await canUserAccessAllEmails(userId)
+    const baseConditions = canAccessAll
+      ? gt(emails.expiresAt, new Date())
+      : and(
+          eq(emails.userId, userId),
+          gt(emails.expiresAt, new Date())
+        )
 
     const totalResult = await db.select({ count: sql<number>`count(*)` })
       .from(emails)
