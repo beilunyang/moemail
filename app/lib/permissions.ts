@@ -34,3 +34,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 export function hasPermission(userRoles: Role[], permission: Permission): boolean {
   return userRoles.some(role => ROLE_PERMISSIONS[role]?.includes(permission));
 } 
+
+export function canAccessAllEmails(role: Role | null | undefined): boolean {
+  return role === ROLES.EMPEROR;
+}

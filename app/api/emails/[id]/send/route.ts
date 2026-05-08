@@ -5,6 +5,7 @@ import { emails, messages } from "@/lib/schema"
 import { eq } from "drizzle-orm"
 import { getRequestContext } from "@cloudflare/next-on-pages"
 import { checkSendPermission } from "@/lib/send-permissions"
+import { canUserAccessAllEmails } from "@/lib/email-access"
 
 export const runtime = "edge"
 
@@ -90,7 +91,8 @@ export async function POST(
       )
     }
 
-    if (email.userId !== userId) {
+    const canAccessAll = await canUserAccessAllEmails(userId)
+    if (!canAccessAll && email.userId !== userId) {
       return NextResponse.json(
         { error: "无权访问此邮箱" },
         { status: 403 }
