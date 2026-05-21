@@ -49,9 +49,9 @@ function migrate() {
     console.log('Generating migrations...')
     execSync('pnpm dlx drizzle-kit generate', { stdio: 'inherit' })
     
-    // Applying migrations using pnpm dlx to ensure correct wrangler version
+    // Applying migrations using wrangler@latest to ensure v4 compatibility
     console.log(`Applying migrations to ${mode} database: ${dbName}`)
-    execSync(`pnpm dlx wrangler@4 d1 migrations apply ${dbName} --${mode}`, { stdio: 'inherit' })
+    execSync(`pnpm dlx wrangler@latest d1 migrations apply ${dbName} --${mode}`, { stdio: 'inherit' })
 
     console.log('Migration completed successfully!')
   } catch (error) {
