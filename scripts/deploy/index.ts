@@ -196,11 +196,12 @@ const checkAndCreateDatabase = async () => {
 };
 
 /**
- * 迁移数据库
+ * 迁移数据库 - 使用最新版本的 wrangler v4
  */
 const migrateDatabase = () => {
   console.log("📝 Migrating remote database...");
   try {
+    // 使用 wrangler@latest 确保使用 v4 版本
     execSync("pnpm run db:migrate-remote", { stdio: "inherit" });
     console.log("✅ Database migration completed successfully");
   } catch (error) {
@@ -336,8 +337,8 @@ const pushPagesSecret = () => {
 
     console.log(`📝 Found ${Object.keys(secrets).length} secrets to push:`, Object.keys(secrets).join(', '));
 
-    // 使用临时文件推送secrets
-    execSync(`pnpm dlx wrangler pages secret bulk ${runtimeEnvFile}`, { 
+    // 使用临时文件推送secrets - 使用 wrangler@latest
+    execSync(`pnpm dlx wrangler@latest pages secret bulk ${runtimeEnvFile}`, { 
       stdio: "inherit" 
     });
 
@@ -384,7 +385,7 @@ const deployPages = () => {
 const deployEmailWorker = () => {
   console.log("🚧 Deploying Email Worker...");
   try {
-    execSync("pnpm dlx wrangler deploy --config wrangler.email.json", { stdio: "inherit" });
+    execSync("pnpm dlx wrangler@latest deploy --config wrangler.email.json", { stdio: "inherit" });
     console.log("✅ Email Worker deployed successfully");
   } catch (error) {
     console.error("❌ Email Worker deployment failed:", error);
@@ -398,7 +399,7 @@ const deployEmailWorker = () => {
 const deployCleanupWorker = () => {
   console.log("🚧 Deploying Cleanup Worker...");
   try {
-    execSync("pnpm dlx wrangler deploy --config wrangler.cleanup.json", { stdio: "inherit" });
+    execSync("pnpm dlx wrangler@latest deploy --config wrangler.cleanup.json", { stdio: "inherit" });
     console.log("✅ Cleanup Worker deployed successfully");
   } catch (error) {
     console.error("❌ Cleanup Worker deployment failed:", error);
@@ -475,6 +476,7 @@ const updateEnvVar = (name: string, value: string) => {
 const main = async () => {
   try {
     console.log("🚀 Starting deployment process...");
+    console.log("📦 Using Wrangler v4 (@latest) for all commands...");
 
     validateEnvironment();
     setupEnvFile();
