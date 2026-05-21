@@ -1,9 +1,6 @@
 import { readFileSync } from 'fs'
-import { exec } from 'child_process'
-import { promisify } from 'util'
+import { execSync } from 'child_process'
 import { join } from 'path'
-
-const execAsync = promisify(exec)
 
 interface D1Database {
   binding: string
@@ -15,7 +12,7 @@ interface WranglerConfig {
   d1_databases: D1Database[]
 }
 
-async function migrate() {
+function migrate() {
   try {
     // Get command line arguments
     const args = process.argv.slice(2)
@@ -50,11 +47,11 @@ async function migrate() {
 
     // Generate migrations
     console.log('Generating migrations...')
-    await execAsync('drizzle-kit generate')
+    execSync('pnpm dlx drizzle-kit generate', { stdio: 'inherit' })
     
-    // Applying migrations
+    // Applying migrations using pnpm dlx to ensure correct wrangler version
     console.log(`Applying migrations to ${mode} database: ${dbName}`)
-    await execAsync(`wrangler d1 migrations apply ${dbName} --${mode}`)
+    execSync(`pnpm dlx wrangler@4 d1 migrations apply ${dbName} --${mode}`, { stdio: 'inherit' })
 
     console.log('Migration completed successfully!')
   } catch (error) {
