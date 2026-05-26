@@ -355,7 +355,8 @@ export function ApiKeyPanel() {
   -d '{
     "name": "test",
     "expiryTime": 3600000,
-    "domain": "moemail.app"
+    "domain": "moemail.app",
+    "subdomain": "team"
   }'`
                             )}
                           >
@@ -369,7 +370,8 @@ export function ApiKeyPanel() {
   -d '{
     "name": "test",
     "expiryTime": 3600000,
-    "domain": "moemail.app"
+    "domain": "moemail.app",
+    "subdomain": "team"
   }'`}
                         </pre>
                       </div>
@@ -587,4 +589,4 @@ export function ApiKeyPanel() {
       }
     </div>
   )
-} 
+}

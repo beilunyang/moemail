@@ -31,10 +31,13 @@
     "success": "Success"
   },
   "create": {
-    "title": "Create Email",
-    "name": "Email Prefix",
-    "namePlaceholder": "Leave empty for random generation",
-    "domain": "Domain",
+  "title": "Create Email",
+  "name": "Email Prefix",
+  "namePlaceholder": "Leave empty for random generation",
+  "subdomain": "Subdomain",
+  "subdomainPlaceholder": "Optional, e.g. team",
+  "invalidSubdomain": "Invalid subdomain format",
+  "domain": "Domain",
     "domainPlaceholder": "Select a domain",
     "expiryTime": "Validity Period",
     "oneHour": "1 Hour",

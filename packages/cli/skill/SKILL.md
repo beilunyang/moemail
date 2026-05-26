@@ -55,7 +55,7 @@ moemail --json read --email-id "$ID" --message-id "$MSG_ID"
 | Command | Required Options | Notable Options |
 |---------|-----------------|-----------------|
 | `config set` | `<key> <value>` | keys: `api-url`, `api-key` |
-| `create` | — | `--name`, `--domain`, `--expiry` (1h\|24h\|3d\|permanent) |
+| `create` | — | `--name`, `--domain`, `--subdomain`, `--expiry` (1h\|24h\|3d\|permanent) |
 | `list` | — | `--email-id` (lists messages in mailbox), `--cursor` |
 | `wait` | `--email-id` | `--timeout` (default 120s), `--interval` (default 5s) |
 | `read` | `--email-id`, `--message-id` | `--format` (text\|html) |

@@ -217,6 +217,12 @@ This project supports automated deployment using GitHub Actions. It supports the
 In the MoeMail User Profile page, you can configure the site's email domains. Supports multiple domain configurations, separated by commas.
 ![Email Domain Configuration](https://pic.otaku.ren/20241227/AQAD88AxG67zeVd-.jpg "Email Domain Configuration")
 
+### What changed after subdomain support
+
+- `EMAIL_DOMAINS` / site settings still store **base domains** only, for example: `example.com,moemail.app`
+- When creating a mailbox, `domain` selects the base domain, and `subdomain` optionally expands the final address to `user@team.example.com`
+- You do **not** need to save `team.example.com` into `EMAIL_DOMAINS` unless you intentionally want it to appear as a standalone selectable domain
+
 ### Cloudflare Email Routing Configuration
 
 To make email domains effective, you also need to configure email routing in the Cloudflare console to forward received emails to the Email Worker.
@@ -239,7 +245,27 @@ To make email domains effective, you also need to configure email routing in the
 ### Notes
 - Ensure domain DNS is hosted on Cloudflare.
 - Email Worker must be successfully deployed.
+- If you enable mailbox subdomains (for example `user@team.example.com`), verify that your Cloudflare Email Routing rules actually cover those subdomain addresses. If your existing catch-all only matches the original domain setup, add the corresponding routing coverage for the subdomain and still point it to the same Email Worker.
 - If Catch-All status is unavailable (stuck loading), please click `Destination addresses` next to `Routing rules`, and bind an email address there.
+
+### Subdomain Deployment Checklist
+
+When enabling mailbox subdomains, verify the following differences from the original deployment:
+
+1. **Base domain config**
+   - Keep `EMAIL_DOMAINS` as base domains only, such as `example.com`
+   - Do not replace it with `team.example.com` unless you want that subdomain shown as a standalone domain option
+2. **Cloudflare Email Routing**
+   - Confirm inbound rules also match subdomain addresses like `*@team.example.com`
+   - Route those messages to the same Email Worker used before
+3. **DNS / domain hosting**
+   - Ensure the parent domain and the target subdomain are both managed in Cloudflare as required by your routing setup
+4. **Sender verification**
+   - If sending from subdomain addresses, verify whether your sender provider (for example Resend) requires separate subdomain verification
+5. **Manual smoke test**
+   - Create `user@team.example.com`
+   - Send a test mail to it and confirm the message appears in MoeMail
+   - If outbound mail is enabled, send one mail from that address and confirm delivery succeeds
 
 ## Permission System
 
@@ -370,6 +396,7 @@ MoeMail supports sending emails using temporary addresses, based on [Resend](htt
 
 - 📋 **Resend Limits**: Please note Resend's sending limits and pricing
 - 🔐 **Domain Verification**: Using custom domains requires verification in Resend
+- 🔐 **Subdomain Senders**: If you send from `user@team.example.com`, also confirm your mail provider allows that subdomain sender identity, or verify the subdomain separately when required
 - 🚫 **Anti-Spam**: Please follow email sending standards, avoid spamming
 - 📊 **Quota Monitoring**: System counts daily usage, stops sending when limit reached
 - 🔄 **Quota Reset**: Daily quota resets at 00:00
@@ -459,19 +486,21 @@ Content-Type: application/json
 {
   "name": "test",
   "expiryTime": 3600000,
-  "domain": "moemail.app"
+  "domain": "moemail.app",
+  "subdomain": "team"
 }
 ```
 Params:
 - `name`: Prefix (optional)
 - `expiryTime`: Validity in ms. 3600000(1h), 86400000(24h), 604800000(7d), 0(Permanent)
-- `domain`: From config
+- `domain`: Base domain from config
+- `subdomain`: Optional single-label subdomain. Final address becomes `name@subdomain.domain`
 
 Response:
 ```json
 {
   "id": "email-uuid-123",
-  "email": "test@moemail.app"
+  "email": "test@team.moemail.app"
 }
 ```
 
@@ -553,7 +582,7 @@ moemail config set api-url https://moemail.app
 moemail config set api-key YOUR_API_KEY
 
 # Create temporary email
-moemail create --domain moemail.app --expiry 1h --json
+moemail create --domain moemail.app --subdomain team --expiry 1h --json
 
 # Wait for new messages (polling)
 moemail wait --email-id <id> --timeout 120 --json
@@ -571,7 +600,7 @@ A typical AI agent verification flow in 3 tool calls:
 
 ```bash
 # 1. Create mailbox
-EMAIL=$(moemail create --domain moemail.app --expiry 1h --json)
+EMAIL=$(moemail create --domain moemail.app --subdomain team --expiry 1h --json)
 EMAIL_ID=$(echo $EMAIL | jq -r '.id')
 ADDRESS=$(echo $EMAIL | jq -r '.address')
 

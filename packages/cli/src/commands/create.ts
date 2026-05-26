@@ -15,6 +15,7 @@ export function registerCreateCommand(program: Command) {
     .description("Create a temporary email address")
     .option("--name <name>", "email prefix")
     .option("--domain <domain>", "email domain")
+    .option("--subdomain <label>", "optional subdomain label")
     .option("--expiry <expiry>", "1h | 24h | 3d | permanent", "1h")
     .action(async (opts) => {
       const json = program.opts().json;
@@ -40,6 +41,7 @@ export function registerCreateCommand(program: Command) {
           name: opts.name,
           expiryTime,
           domain,
+          subdomain: opts.subdomain,
         })) as any;
 
         const expiresAt =
