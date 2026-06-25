@@ -125,7 +125,7 @@
     "title": "Role Management",
     "description": "Manage user roles (Emperor only)",
     "search": "Search Users",
-    "searchPlaceholder": "Enter username or email",
+    "searchPlaceholder": "Search by username, email or name",
     "username": "Username",
     "email": "Email",
     "role": "Role",
@@ -134,6 +134,10 @@
     "noUsers": "No users found",
     "loading": "Loading...",
     "updateSuccess": "User role updated successfully",
-    "updateFailed": "Failed to update user role"
+    "updateFailed": "Failed to update user role",
+    "totalUsers": "{count} users total",
+    "prevPage": "Previous",
+    "nextPage": "Next",
+    "pageInfo": "Page {current} / {total}"
   }
 }

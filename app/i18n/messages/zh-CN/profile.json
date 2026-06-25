@@ -125,7 +125,7 @@
     "title": "角色管理",
     "description": "管理用户角色（仅皇帝可用）",
     "search": "搜索用户",
-    "searchPlaceholder": "输入用户名或邮箱",
+    "searchPlaceholder": "搜索用户名、邮箱或昵称",
     "username": "用户名",
     "email": "邮箱",
     "role": "角色",
@@ -134,6 +134,10 @@
     "noUsers": "未找到用户",
     "loading": "加载中...",
     "updateSuccess": "用户角色更新成功",
-    "updateFailed": "更新用户角色失败"
+    "updateFailed": "更新用户角色失败",
+    "totalUsers": "共 {count} 个用户",
+    "prevPage": "上一页",
+    "nextPage": "下一页",
+    "pageInfo": "第 {current} / {total} 页"
   }
 }

@@ -125,7 +125,7 @@
     "title": "角色管理",
     "description": "管理使用者角色（僅皇帝可用）",
     "search": "搜尋使用者",
-    "searchPlaceholder": "輸入使用者名稱或郵箱",
+    "searchPlaceholder": "搜尋使用者名稱、郵箱或暱稱",
     "username": "使用者名稱",
     "email": "郵箱",
     "role": "角色",
@@ -134,6 +134,10 @@
     "noUsers": "未找到使用者",
     "loading": "載入中...",
     "updateSuccess": "使用者角色更新成功",
-    "updateFailed": "更新使用者角色失敗"
+    "updateFailed": "更新使用者角色失敗",
+    "totalUsers": "共 {count} 個使用者",
+    "prevPage": "上一頁",
+    "nextPage": "下一頁",
+    "pageInfo": "第 {current} / {total} 頁"
   }
 }

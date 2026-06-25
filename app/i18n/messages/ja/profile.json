@@ -125,7 +125,7 @@
     "title": "ロール管理",
     "description": "ユーザーロールを管理（皇帝のみ利用可能）",
     "search": "ユーザーを検索",
-    "searchPlaceholder": "ユーザー名またはメールを入力",
+    "searchPlaceholder": "ユーザー名、メールまたは名前で検索",
     "username": "ユーザー名",
     "email": "メール",
     "role": "ロール",
@@ -134,6 +134,10 @@
     "noUsers": "ユーザーが見つかりません",
     "loading": "読み込み中...",
     "updateSuccess": "ユーザーロールを更新しました",
-    "updateFailed": "ユーザーロールの更新に失敗しました"
+    "updateFailed": "ユーザーロールの更新に失敗しました",
+    "totalUsers": "合計 {count} ユーザー",
+    "prevPage": "前へ",
+    "nextPage": "次へ",
+    "pageInfo": "{current} / {total} ページ"
   }
 }

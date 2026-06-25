@@ -1,10 +1,78 @@
 import { createDb } from "@/lib/db"
 import { users } from "@/lib/schema"
-import { eq } from "drizzle-orm"
+import { eq, like, or, sql } from "drizzle-orm"
+import { checkPermission } from "@/lib/auth"
+import { PERMISSIONS } from "@/lib/permissions"
 
 export const runtime = "edge"
 
+export async function GET(request: Request) {
+  const canPromote = await checkPermission(PERMISSIONS.PROMOTE_USER)
+  if (!canPromote) {
+    return Response.json({ error: "权限不足" }, { status: 403 })
+  }
+
+  const { searchParams } = new URL(request.url)
+  const page = Math.max(1, Number(searchParams.get("page") || "1"))
+  const pageSize = Math.min(50, Math.max(1, Number(searchParams.get("pageSize") || "20")))
+  const search = searchParams.get("search")?.trim()
+
+  const db = createDb()
+
+  try {
+    const searchCondition = search
+      ? or(
+          like(users.username, `%${search}%`),
+          like(users.email, `%${search}%`),
+          like(users.name, `%${search}%`)
+        )
+      : undefined
+
+    const totalResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(searchCondition)
+    const total = Number(totalResult[0].count)
+
+    const userList = await db.query.users.findMany({
+      where: searchCondition,
+      with: {
+        userRoles: {
+          with: {
+            role: true,
+          },
+        },
+      },
+      limit: pageSize,
+      offset: (page - 1) * pageSize,
+      orderBy: (users, { desc }) => [desc(users.id)],
+    })
+
+    return Response.json({
+      users: userList.map((u) => ({
+        id: u.id,
+        name: u.name,
+        username: u.username,
+        email: u.email,
+        image: u.image,
+        role: u.userRoles[0]?.role.name || null,
+      })),
+      total,
+      page,
+      pageSize,
+    })
+  } catch (error) {
+    console.error("Failed to list users:", error)
+    return Response.json({ error: "获取用户列表失败" }, { status: 500 })
+  }
+}
+
 export async function POST(request: Request) {
+  const canPromote = await checkPermission(PERMISSIONS.PROMOTE_USER)
+  if (!canPromote) {
+    return Response.json({ error: "权限不足" }, { status: 403 })
+  }
+
   try {
     const json = await request.json()
     const { searchText } = json as { searchText: string }
@@ -46,4 +114,4 @@ export async function POST(request: Request) {
       { status: 500 }
     )
   }
-} 
+}
