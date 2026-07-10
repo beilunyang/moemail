@@ -138,6 +138,13 @@
     "totalUsers": "{count} users total",
     "prevPage": "Previous",
     "nextPage": "Next",
-    "pageInfo": "Page {current} / {total}"
+    "pageInfo": "Page {current} / {total}",
+    "deleteUser": "Delete User",
+    "deleteTitle": "Delete User",
+    "deleteConfirm": "Are you sure you want to delete user {name}? All of their emails, messages and other data will be permanently deleted and cannot be recovered.",
+    "deleteConfirmButton": "Delete",
+    "cancel": "Cancel",
+    "deleteSuccess": "User deleted successfully",
+    "deleteFailed": "Failed to delete user"
   }
 }

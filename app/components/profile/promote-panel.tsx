@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
-import { Crown, Gem, Sword, User2, Loader2, Search, ChevronLeft, ChevronRight, Users } from "lucide-react"
+import { Crown, Gem, Sword, User2, Loader2, Search, ChevronLeft, ChevronRight, Users, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useState, useEffect, useCallback } from "react"
 import { useToast } from "@/components/ui/use-toast"
@@ -14,6 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 const roleIcons = {
   [ROLES.EMPEROR]: Crown,
@@ -44,6 +54,8 @@ export function PromotePanel() {
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(true)
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null)
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
+  const [userToDelete, setUserToDelete] = useState<UserItem | null>(null)
   const { toast } = useToast()
 
   const roleNames = {
@@ -120,6 +132,37 @@ export function PromotePanel() {
     }
   }
 
+  const handleDelete = async (user: UserItem) => {
+    setDeletingUserId(user.id)
+    try {
+      const res = await fetch("/api/roles/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id }),
+      })
+      if (!res.ok) {
+        const error = await res.json() as { error: string }
+        throw new Error(error.error)
+      }
+      toast({ title: t("deleteSuccess") })
+      setUserToDelete(null)
+      // 若删除的是当前页最后一条，且不在首页，则退回上一页（useEffect 会重新拉取）
+      if (users.length === 1 && page > 1) {
+        setPage((p) => p - 1)
+      } else {
+        await fetchUsers()
+      }
+    } catch (error) {
+      toast({
+        title: t("deleteFailed"),
+        description: error instanceof Error ? error.message : undefined,
+        variant: "destructive",
+      })
+    } finally {
+      setDeletingUserId(null)
+    }
+  }
+
   return (
     <div className="bg-background rounded-lg border-2 border-primary/20 p-6">
       <div className="flex items-center gap-2 mb-6">
@@ -189,44 +232,55 @@ export function PromotePanel() {
                       {roleNames[ROLES.EMPEROR]}
                     </div>
                   ) : (
-                    <div className="relative">
-                      {isUpdating && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded z-10">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        </div>
-                      )}
-                      <Select
-                        value={user.role || ROLES.CIVILIAN}
-                        onValueChange={(v) => handleRoleChange(user.id, v as RoleWithoutEmperor)}
-                        disabled={isUpdating}
-                      >
-                        <SelectTrigger className="w-32 h-8 text-sm">
-                          <div className="flex items-center gap-1.5">
-                            <RoleIcon className="w-3.5 h-3.5" />
-                            <SelectValue />
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        {isUpdating && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded z-10">
+                            <Loader2 className="w-4 h-4 animate-spin" />
                           </div>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={ROLES.DUKE}>
-                            <div className="flex items-center gap-2">
-                              <Gem className="w-4 h-4" />
-                              {roleNames[ROLES.DUKE]}
+                        )}
+                        <Select
+                          value={user.role || ROLES.CIVILIAN}
+                          onValueChange={(v) => handleRoleChange(user.id, v as RoleWithoutEmperor)}
+                          disabled={isUpdating}
+                        >
+                          <SelectTrigger className="w-32 h-8 text-sm">
+                            <div className="flex items-center gap-1.5">
+                              <RoleIcon className="w-3.5 h-3.5" />
+                              <SelectValue />
                             </div>
-                          </SelectItem>
-                          <SelectItem value={ROLES.KNIGHT}>
-                            <div className="flex items-center gap-2">
-                              <Sword className="w-4 h-4" />
-                              {roleNames[ROLES.KNIGHT]}
-                            </div>
-                          </SelectItem>
-                          <SelectItem value={ROLES.CIVILIAN}>
-                            <div className="flex items-center gap-2">
-                              <User2 className="w-4 h-4" />
-                              {roleNames[ROLES.CIVILIAN]}
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={ROLES.DUKE}>
+                              <div className="flex items-center gap-2">
+                                <Gem className="w-4 h-4" />
+                                {roleNames[ROLES.DUKE]}
+                              </div>
+                            </SelectItem>
+                            <SelectItem value={ROLES.KNIGHT}>
+                              <div className="flex items-center gap-2">
+                                <Sword className="w-4 h-4" />
+                                {roleNames[ROLES.KNIGHT]}
+                              </div>
+                            </SelectItem>
+                            <SelectItem value={ROLES.CIVILIAN}>
+                              <div className="flex items-center gap-2">
+                                <User2 className="w-4 h-4" />
+                                {roleNames[ROLES.CIVILIAN]}
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => setUserToDelete(user)}
+                        title={t("deleteUser")}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -261,6 +315,47 @@ export function PromotePanel() {
           )}
         </>
       )}
+
+      <AlertDialog
+        open={!!userToDelete}
+        onOpenChange={(open) => {
+          if (!open && !deletingUserId) setUserToDelete(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteConfirm", {
+                name:
+                  userToDelete?.name ||
+                  userToDelete?.username ||
+                  userToDelete?.email ||
+                  "",
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={!!deletingUserId}>
+              {t("cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={!!deletingUserId}
+              onClick={(e) => {
+                e.preventDefault()
+                if (userToDelete) handleDelete(userToDelete)
+              }}
+            >
+              {deletingUserId ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                t("deleteConfirmButton")
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

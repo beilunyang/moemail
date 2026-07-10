@@ -138,6 +138,13 @@
     "totalUsers": "合計 {count} ユーザー",
     "prevPage": "前へ",
     "nextPage": "次へ",
-    "pageInfo": "{current} / {total} ページ"
+    "pageInfo": "{current} / {total} ページ",
+    "deleteUser": "ユーザーを削除",
+    "deleteTitle": "ユーザーを削除",
+    "deleteConfirm": "ユーザー {name} を削除してもよろしいですか？このユーザーのメール・メッセージ等のデータはすべて完全に削除され、復元できません。",
+    "deleteConfirmButton": "削除",
+    "cancel": "キャンセル",
+    "deleteSuccess": "ユーザーを削除しました",
+    "deleteFailed": "ユーザーの削除に失敗しました"
   }
 }

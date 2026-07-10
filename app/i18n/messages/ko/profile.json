@@ -138,6 +138,13 @@
     "totalUsers": "총 {count}명의 사용자",
     "prevPage": "이전",
     "nextPage": "다음",
-    "pageInfo": "{current} / {total} 페이지"
+    "pageInfo": "{current} / {total} 페이지",
+    "deleteUser": "사용자 삭제",
+    "deleteTitle": "사용자 삭제",
+    "deleteConfirm": "사용자 {name}을(를) 삭제하시겠습니까? 이 사용자의 모든 이메일, 메시지 등의 데이터가 영구적으로 삭제되며 복구할 수 없습니다.",
+    "deleteConfirmButton": "삭제",
+    "cancel": "취소",
+    "deleteSuccess": "사용자가 삭제되었습니다",
+    "deleteFailed": "사용자 삭제에 실패했습니다"
   }
 }

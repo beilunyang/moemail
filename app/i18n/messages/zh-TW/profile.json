@@ -138,6 +138,13 @@
     "totalUsers": "共 {count} 個使用者",
     "prevPage": "上一頁",
     "nextPage": "下一頁",
-    "pageInfo": "第 {current} / {total} 頁"
+    "pageInfo": "第 {current} / {total} 頁",
+    "deleteUser": "刪除使用者",
+    "deleteTitle": "刪除使用者",
+    "deleteConfirm": "確定要刪除使用者 {name} 嗎？該使用者名下的所有郵箱、郵件等資料將被永久刪除且無法復原。",
+    "deleteConfirmButton": "刪除",
+    "cancel": "取消",
+    "deleteSuccess": "使用者刪除成功",
+    "deleteFailed": "刪除使用者失敗"
   }
 }
