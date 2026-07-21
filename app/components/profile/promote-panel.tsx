@@ -135,10 +135,8 @@ export function PromotePanel() {
   const handleDelete = async (user: UserItem) => {
     setDeletingUserId(user.id)
     try {
-      const res = await fetch("/api/roles/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id }),
+      const res = await fetch(`/api/users/${user.id}`, {
+        method: "DELETE",
       })
       if (!res.ok) {
         const error = await res.json() as { error: string }

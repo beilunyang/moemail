@@ -7,14 +7,17 @@ import { getUserId } from "@/lib/apiKey";
 
 export const runtime = "edge";
 
-export async function POST(request: Request) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const canManage = await checkPermission(PERMISSIONS.PROMOTE_USER);
   if (!canManage) {
     return Response.json({ error: "权限不足" }, { status: 403 });
   }
 
   try {
-    const { userId } = await request.json() as { userId: string };
+    const { id: userId } = await params;
     if (!userId) {
       return Response.json({ error: "缺少必要参数" }, { status: 400 });
     }
@@ -26,14 +29,14 @@ export async function POST(request: Request) {
 
     const db = createDb();
 
-    const currentUserRole = await db.query.userRoles.findFirst({
+    const targetUserRole = await db.query.userRoles.findFirst({
       where: eq(userRoles.userId, userId),
       with: {
         role: true,
       },
     });
 
-    if (currentUserRole?.role.name === ROLES.EMPEROR) {
+    if (targetUserRole?.role.name === ROLES.EMPEROR) {
       return Response.json({ error: "不能删除皇帝" }, { status: 400 });
     }
 
