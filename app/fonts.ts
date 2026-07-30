@@ -1,7 +1,7 @@
-import localFont from 'next/font/local'
+import { inter } from 'next/font/google'
 
-export const zpix = localFont({
-  src: '../public/fonts/zpix.ttf',
-  variable: '--font-zpix',
+export const font = inter({
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-inter',
   display: 'swap',
-}) 
+})
