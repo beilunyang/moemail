@@ -141,18 +141,34 @@ const updateDatabaseConfig = (dbId: string) => {
 const updateKVConfig = (namespaceId: string) => {
   console.log(`📝 Updating KV namespace ID (${namespaceId}) in configurations...`);
 
-  // KV命名空间只在主wrangler.json中使用
-  const wranglerPath = resolve("wrangler.json");
-  if (existsSync(wranglerPath)) {
+  // Pages 和 Email Worker 必须使用同一个 SITE_CONFIG 命名空间。
+  const configFiles = ["wrangler.json", "wrangler.email.json"];
+
+  for (const filename of configFiles) {
+    const wranglerPath = resolve(filename);
+    if (!existsSync(wranglerPath)) continue;
+
     try {
       const json = JSON.parse(readFileSync(wranglerPath, "utf-8"));
-      if (json.kv_namespaces && json.kv_namespaces.length > 0) {
-        json.kv_namespaces[0].id = namespaceId;
+      json.kv_namespaces ||= [];
+
+      const siteConfigBinding = json.kv_namespaces.find(
+        (binding: { binding?: string }) => binding.binding === "SITE_CONFIG"
+      );
+
+      if (siteConfigBinding) {
+        siteConfigBinding.id = namespaceId;
+      } else {
+        json.kv_namespaces.push({
+          binding: "SITE_CONFIG",
+          id: namespaceId,
+        });
       }
+
       writeFileSync(wranglerPath, JSON.stringify(json, null, 2));
-      console.log(`✅ Updated KV namespace ID in wrangler.json`);
+      console.log(`✅ Updated KV namespace ID in ${filename}`);
     } catch (error) {
-      console.error(`❌ Failed to update wrangler.json:`, error);
+      console.error(`❌ Failed to update ${filename}:`, error);
     }
   }
 };

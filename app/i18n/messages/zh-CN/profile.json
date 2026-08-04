@@ -107,6 +107,18 @@
     "adminContact": "管理员联系方式",
     "adminContactPlaceholder": "邮箱或其他联系方式",
     "maxEmails": "每个用户最大邮箱数",
+    "catchAll": {
+      "title": "Catch-all 兜底邮箱",
+      "description": "每个域名独立配置；无论是否启用，邮箱名都可以编辑。",
+      "enabledColumn": "启用",
+      "mailboxColumn": "邮箱名",
+      "alwaysShowColumn": "始终显示",
+      "enableDomain": "启用 {domain} 的 Catch-all",
+      "alwaysShowDomain": "始终显示 {domain} 的 Catch-all 邮箱",
+      "alwaysShowDescription": "“始终显示”默认开启；关闭后仅在该域名停用 Catch-all 时从邮箱列表隐藏，不会删除邮箱或历史邮件。",
+      "mailboxName": "{domain} 的兜底邮箱名",
+      "mailboxNamePlaceholder": "例如：catchall"
+    },
     "turnstile": {
       "enable": "启用 Cloudflare Turnstile",
       "enableDescription": "开启后，账号登录与注册将需要通过 Turnstile 验证",

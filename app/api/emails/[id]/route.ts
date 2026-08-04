@@ -5,6 +5,12 @@ import { eq, and, lt, or, sql, ne, isNull } from "drizzle-orm"
 import { encodeCursor, decodeCursor } from "@/lib/cursor"
 import { getUserId } from "@/lib/apiKey"
 import { checkBasicSendPermission } from "@/lib/send-permissions"
+import { getRequestContext } from "@cloudflare/next-on-pages"
+import {
+  CATCHALL_EMAIL_KEY,
+  normalizeEmailAddress,
+  parseCatchAllEmailConfig,
+} from "@/lib/catch-all"
 
 export const runtime = "edge"
 
@@ -14,13 +20,17 @@ export async function DELETE(
 ) {
   const userId = await getUserId()
 
+  if (!userId) {
+    return NextResponse.json({ error: "未登录" }, { status: 401 })
+  }
+
   try {
     const db = createDb()
     const { id } = await params
     const email = await db.query.emails.findFirst({
       where: and(
         eq(emails.id, id),
-        eq(emails.userId, userId!)
+        eq(emails.userId, userId)
       )
     })
 
@@ -28,6 +38,20 @@ export async function DELETE(
       return NextResponse.json(
         { error: "邮箱不存在或无权限删除" },
         { status: 403 }
+      )
+    }
+
+    const env = getRequestContext().env
+    const catchAllEmail = await env.SITE_CONFIG.get(CATCHALL_EMAIL_KEY)
+    const catchAllConfig = parseCatchAllEmailConfig(catchAllEmail)
+    const catchAllAddresses = new Set(
+      Object.values(catchAllConfig).map(({ address }) => normalizeEmailAddress(address)),
+    )
+
+    if (catchAllAddresses.has(normalizeEmailAddress(email.address))) {
+      return NextResponse.json(
+        { error: "Catch-all 邮箱不能删除，请先在网站设置中更换配置" },
+        { status: 409 },
       )
     }
     await db.delete(messages)
@@ -44,7 +68,7 @@ export async function DELETE(
       { status: 500 }
     )
   }
-} 
+}
 
 const PAGE_SIZE = 20
 
@@ -159,4 +183,4 @@ export async function GET(
       { status: 500 }
     )
   }
-} 
+}

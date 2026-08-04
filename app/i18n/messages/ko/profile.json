@@ -107,6 +107,18 @@
     "adminContact": "관리자 연락처",
     "adminContactPlaceholder": "이메일 또는 기타 연락 방법",
     "maxEmails": "사용자당 최대 이메일 수",
+    "catchAll": {
+      "title": "Catch-all 대체 메일함",
+      "description": "도메인별로 독립적으로 설정합니다. 활성화 여부와 관계없이 메일함 이름을 편집할 수 있습니다.",
+      "enabledColumn": "활성화",
+      "mailboxColumn": "메일함",
+      "alwaysShowColumn": "항상 표시",
+      "enableDomain": "{domain}의 Catch-all 활성화",
+      "alwaysShowDomain": "{domain}의 Catch-all 메일함 항상 표시",
+      "alwaysShowDescription": "‘항상 표시’는 기본적으로 켜져 있습니다. 끄면 Catch-all이 비활성화된 동안에만 목록에서 숨겨지며 메일함과 기존 메일은 삭제되지 않습니다.",
+      "mailboxName": "{domain}의 메일함 이름",
+      "mailboxNamePlaceholder": "예: catchall"
+    },
     "turnstile": {
       "enable": "Cloudflare Turnstile 활성화",
       "enableDescription": "활성화되면 사용자 이름/비밀번호 로그인 및 회원가입에 Turnstile 인증이 필요합니다",

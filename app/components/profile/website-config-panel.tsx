@@ -4,8 +4,9 @@ import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Settings } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useState, useEffect } from "react"
-import { Role, ROLES } from "@/lib/permissions"
+import { useState, useEffect, useMemo } from "react"
+import { ROLES } from "@/lib/permissions"
+import type { Role } from "@/lib/permissions"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
@@ -18,6 +19,19 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { EMAIL_CONFIG } from "@/config"
+import { normalizeMailboxName, parseEmailDomains } from "@/lib/catch-all"
+
+interface CatchAllDomainSettings {
+  enabled: boolean
+  showAlways: boolean
+  mailboxName: string
+}
+
+const DEFAULT_CATCH_ALL_DOMAIN_SETTINGS: CatchAllDomainSettings = {
+  enabled: false,
+  showAlways: true,
+  mailboxName: "",
+}
 
 export function WebsiteConfigPanel() {
   const t = useTranslations("profile.website")
@@ -29,9 +43,14 @@ export function WebsiteConfigPanel() {
   const [turnstileEnabled, setTurnstileEnabled] = useState(false)
   const [turnstileSiteKey, setTurnstileSiteKey] = useState("")
   const [turnstileSecretKey, setTurnstileSecretKey] = useState("")
+  const [catchAllDomains, setCatchAllDomains] = useState<Record<string, CatchAllDomainSettings>>({})
   const [showSecretKey, setShowSecretKey] = useState(false)
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
+
+  const configuredDomains = useMemo(() => (
+    parseEmailDomains(emailDomains)
+  ), [emailDomains])
 
 
   useEffect(() => {
@@ -50,6 +69,9 @@ export function WebsiteConfigPanel() {
           enabled: boolean,
           siteKey: string,
           secretKey?: string
+        },
+        catchAll?: {
+          domains: Record<string, CatchAllDomainSettings>
         }
       }
       setDefaultRole(data.defaultRole)
@@ -59,12 +81,22 @@ export function WebsiteConfigPanel() {
       setTurnstileEnabled(Boolean(data.turnstile?.enabled))
       setTurnstileSiteKey(data.turnstile?.siteKey ?? "")
       setTurnstileSecretKey(data.turnstile?.secretKey ?? "")
+      setCatchAllDomains(data.catchAll?.domains ?? {})
     }
   }
 
   const handleSave = async () => {
     setLoading(true)
     try {
+      const normalizedCatchAllDomains = configuredDomains.reduce<Record<string, CatchAllDomainSettings>>((config, domain) => {
+        const domainSettings = catchAllDomains[domain] ?? DEFAULT_CATCH_ALL_DOMAIN_SETTINGS
+        config[domain] = {
+          ...domainSettings,
+          mailboxName: normalizeMailboxName(domainSettings.mailboxName),
+        }
+        return config
+      }, {})
+
       const res = await fetch("/api/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -73,6 +105,9 @@ export function WebsiteConfigPanel() {
           emailDomains,
           adminContact,
           maxEmails: maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString(),
+          catchAll: {
+            domains: normalizedCatchAllDomains,
+          },
           turnstile: {
             enabled: turnstileEnabled,
             siteKey: turnstileSiteKey,
@@ -81,7 +116,10 @@ export function WebsiteConfigPanel() {
         }),
       })
 
-      if (!res.ok) throw new Error(t("saveFailed"))
+      if (!res.ok) {
+        const data = await res.json().catch(() => null) as { error?: string } | null
+        throw new Error(data?.error || t("saveFailed"))
+      }
 
       toast({
         title: t("saveSuccess"),
@@ -154,6 +192,68 @@ export function WebsiteConfigPanel() {
               placeholder={`${EMAIL_CONFIG.MAX_ACTIVE_EMAILS}`}
             />
           </div>
+        </div>
+
+        <div className="space-y-4 rounded-lg border border-dashed border-primary/40 p-4">
+          <div className="space-y-1">
+            <Label className="text-sm font-medium">{t("catchAll.title")}</Label>
+            <p className="text-xs text-muted-foreground">{t("catchAll.description")}</p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <div className="min-w-[36rem] space-y-2">
+              <div className="grid grid-cols-[6rem_minmax(16rem,1fr)_7rem] items-center gap-3 px-2 text-xs font-medium text-muted-foreground">
+                <span>{t("catchAll.enabledColumn")}</span>
+                <span>{t("catchAll.mailboxColumn")}</span>
+                <span className="text-right">{t("catchAll.alwaysShowColumn")}</span>
+              </div>
+
+              {configuredDomains.map((domain) => {
+                const domainSettings = catchAllDomains[domain] ?? DEFAULT_CATCH_ALL_DOMAIN_SETTINGS
+                const updateDomainSettings = (updates: Partial<CatchAllDomainSettings>) => {
+                  setCatchAllDomains((current) => ({
+                    ...current,
+                    [domain]: {
+                      ...DEFAULT_CATCH_ALL_DOMAIN_SETTINGS,
+                      ...current[domain],
+                      ...updates,
+                    },
+                  }))
+                }
+
+                return (
+                  <div
+                    key={domain}
+                    className="grid grid-cols-[6rem_minmax(16rem,1fr)_7rem] items-center gap-3 rounded-md border border-primary/20 p-2"
+                  >
+                    <Switch
+                      checked={domainSettings.enabled}
+                      onCheckedChange={(enabled) => updateDomainSettings({ enabled })}
+                      aria-label={t("catchAll.enableDomain", { domain })}
+                    />
+                    <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                      <Input
+                        value={domainSettings.mailboxName}
+                        onChange={(event) => updateDomainSettings({ mailboxName: event.target.value })}
+                        placeholder={t("catchAll.mailboxNamePlaceholder")}
+                        aria-label={t("catchAll.mailboxName", { domain })}
+                        className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      />
+                      <span className="shrink-0 pr-3 text-sm text-muted-foreground">@{domain}</span>
+                    </div>
+                    <Switch
+                      checked={domainSettings.showAlways}
+                      onCheckedChange={(showAlways) => updateDomainSettings({ showAlways })}
+                      aria-label={t("catchAll.alwaysShowDomain", { domain })}
+                      className="justify-self-end"
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground">{t("catchAll.alwaysShowDescription")}</p>
         </div>
 
         <div className="space-y-4 rounded-lg border border-dashed border-primary/40 p-4">

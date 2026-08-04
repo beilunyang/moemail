@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react"
 import { useTranslations } from "next-intl"
 import { CreateDialog } from "./create-dialog"
 import { ShareDialog } from "./share-dialog"
-import { Mail, RefreshCw, Trash2 } from "lucide-react"
+import { Mail, RefreshCw, ShieldCheck, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useThrottle } from "@/hooks/use-throttle"
@@ -30,6 +30,8 @@ interface Email {
   address: string
   createdAt: number
   expiresAt: number
+  isCatchAll?: boolean
+  isCatchAllEnabled?: boolean
 }
 
 interface EmailListProps {
@@ -195,15 +197,26 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
                   key={email.id}
                   className={cn("flex items-center gap-2 p-2 rounded cursor-pointer text-sm group",
                     "hover:bg-primary/5",
+                    email.isCatchAll && "border border-primary/30 bg-primary/5",
                     selectedEmailId === email.id && "bg-primary/10"
                   )}
                   onClick={() => onEmailSelect(email)}
                 >
                   <Mail className="h-4 w-4 text-primary/60" />
                   <div className="truncate flex-1">
-                    <div className="font-medium truncate">{email.address}</div>
+                    <div className="flex items-center gap-1.5 font-medium">
+                      <span className="truncate">{email.address}</span>
+                      {email.isCatchAll && (
+                        <span className="inline-flex shrink-0 items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
+                          <ShieldCheck className="h-3 w-3" />
+                          {t("catchAll")}
+                        </span>
+                      )}
+                    </div>
                     <div className="text-xs text-gray-500">
-                      {new Date(email.expiresAt).getFullYear() === 9999 ? (
+                      {email.isCatchAll ? (
+                        email.isCatchAllEnabled ? t("catchAllEnabled") : t("catchAllDisabled")
+                      ) : new Date(email.expiresAt).getFullYear() === 9999 ? (
                         t("permanent")
                       ) : (
                         `${t("expiresAt")}: ${new Date(email.expiresAt).toLocaleString()}`
@@ -212,17 +225,19 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
                   </div>
                   <div className="opacity-0 group-hover:opacity-100 flex gap-1" onClick={(e) => e.stopPropagation()}>
                     <ShareDialog emailId={email.id} emailAddress={email.address} />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setEmailToDelete(email)
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    {!email.isCatchAll && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEmailToDelete(email)
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -261,4 +276,4 @@ export function EmailList({ onEmailSelect, selectedEmailId }: EmailListProps) {
       </AlertDialog>
     </>
   )
-} 
+}

@@ -107,6 +107,18 @@
     "adminContact": "Admin Contact",
     "adminContactPlaceholder": "Email or other contact method",
     "maxEmails": "Max Emails per User",
+    "catchAll": {
+      "title": "Catch-all mailboxes",
+      "description": "Configure each domain independently. Mailbox names remain editable whether the domain is enabled or disabled.",
+      "enabledColumn": "Enabled",
+      "mailboxColumn": "Mailbox",
+      "alwaysShowColumn": "Always show",
+      "enableDomain": "Enable Catch-all for {domain}",
+      "alwaysShowDomain": "Always show the Catch-all mailbox for {domain}",
+      "alwaysShowDescription": "Always show is enabled by default. Turn it off to hide this mailbox from the list only while its Catch-all routing is disabled.",
+      "mailboxName": "Mailbox name for {domain}",
+      "mailboxNamePlaceholder": "For example: catchall"
+    },
     "turnstile": {
       "enable": "Enable Cloudflare Turnstile",
       "enableDescription": "When enabled, username/password login and registration require Turnstile verification",

@@ -114,7 +114,8 @@ cp wrangler.example.json wrangler.json
 cp wrangler.email.example.json wrangler.email.json
 cp wrangler.cleanup.example.json wrangler.cleanup.json
 ```
-设置 Cloudflare D1 数据库名以及数据库 ID
+设置 Cloudflare D1 数据库名及数据库 ID，并确保 `wrangler.json` 与
+`wrangler.email.json` 中的 `SITE_CONFIG` 使用同一个 KV namespace ID。
 
 4. 设置环境变量：
 ```bash
@@ -216,6 +217,12 @@ pnpm dlx tsx ./scripts/deploy/index.ts
 
 在 MoeMail 个人中心页面，可以配置网站的邮箱域名，支持多域名配置，多个域名用逗号分隔
 ![邮箱域名配置](https://pic.otaku.ren/20241227/AQAD88AxG67zeVd-.jpg "邮箱域名配置")
+
+皇帝可以在个人中心的“网站设置”中按域名独立配置 Catch-all。每个域名均包含“启用”“邮箱名”和“始终显示”三个选项；邮箱名始终可以编辑，“始终显示”默认开启，关闭后仅在该域名停用 Catch-all 时从邮箱列表隐藏。后台确认完整地址尚未被占用后，会创建属于当前皇帝且没有有效期的 Catch-all 邮箱。所有域名的地址、启用状态和显示设置统一保存在 `SITE_CONFIG` 的 `CATCHALL_EMAIL` JSON 对象中。停用或隐藏不会删除邮箱及邮件；重新启用或修改邮箱名时，系统会更新同一条邮箱记录，邮箱 ID 和历史邮件保持不变。
+
+“未知收件人”是指收到邮件时，`message.to` 对应的完整地址在 `email` 表中不存在。例如尚未创建 `random@example.com`，却收到了发往该地址的邮件。此时邮件会保存到 `example.com` 对应的 Catch-all 邮箱，但邮件记录和 Webhook 的 `toAddress` 仍是 `random@example.com`；系统不会把 `random@example.com` 自动创建到 `email` 表。未启用 Catch-all、配置失效或兜底邮箱不存在时，Email Worker 会记录日志并丢弃邮件。
+
+Email Worker 必须绑定与主应用相同的 `SITE_CONFIG` KV。自动部署脚本会同步写入该 namespace ID；手动维护 Wrangler 配置时也需要保持两者一致。
 
 ### Cloudflare 邮件路由配置
 

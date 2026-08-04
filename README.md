@@ -114,7 +114,9 @@ cp wrangler.example.json wrangler.json
 cp wrangler.email.example.json wrangler.email.json
 cp wrangler.cleanup.example.json wrangler.cleanup.json
 ```
-Set Cloudflare D1 database name and database ID.
+Set the Cloudflare D1 database name and database ID, and make sure the
+`SITE_CONFIG` binding in `wrangler.json` and `wrangler.email.json` uses the same
+KV namespace ID.
 
 4. Setup Environment Variables:
 ```bash
@@ -217,6 +219,12 @@ This project supports automated deployment using GitHub Actions. It supports the
 
 In the MoeMail User Profile page, you can configure the site's email domains. Supports multiple domain configurations, separated by commas.
 ![Email Domain Configuration](https://pic.otaku.ren/20241227/AQAD88AxG67zeVd-.jpg "Email Domain Configuration")
+
+The Emperor can configure Catch-all independently for each domain in Website Settings. Every row contains Enabled, Mailbox, and Always show controls. Mailbox names remain editable at all times; Always show defaults to on and, when off, hides that mailbox only while Catch-all routing for its domain is disabled. After confirming that the complete address is not occupied, the backend creates a non-expiring mailbox owned by the Emperor. Each domain's address, enabled state, and visibility setting are stored together in the `CATCHALL_EMAIL` JSON object in `SITE_CONFIG`. Disabling, hiding, re-enabling, or renaming does not replace the mailbox record, so its ID and historical messages remain unchanged.
+
+An “unknown recipient” means that the complete address in `message.to` does not exist in the `email` table. For example, mail arrives for `random@example.com` even though that mailbox was never created. The message is stored in the Catch-all mailbox for `example.com`, while the message record and webhook keep `random@example.com` in `toAddress`. MoeMail does not create an `email` record for `random@example.com`. If Catch-all is disabled, invalid, or its mailbox is missing, the Email Worker logs the reason and drops the message.
+
+The Email Worker must bind the same `SITE_CONFIG` KV namespace as the main application. The automatic deployment script synchronizes this namespace ID; keep both Wrangler files aligned when configuring them manually.
 
 ### Cloudflare Email Routing Configuration
 

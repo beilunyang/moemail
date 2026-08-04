@@ -107,6 +107,18 @@
     "adminContact": "管理員聯絡方式",
     "adminContactPlaceholder": "郵箱或其他聯絡方式",
     "maxEmails": "每個使用者最大郵箱數",
+    "catchAll": {
+      "title": "Catch-all 備援郵箱",
+      "description": "每個網域獨立設定；無論是否啟用，郵箱名稱都可以編輯。",
+      "enabledColumn": "啟用",
+      "mailboxColumn": "郵箱名稱",
+      "alwaysShowColumn": "始終顯示",
+      "enableDomain": "啟用 {domain} 的 Catch-all",
+      "alwaysShowDomain": "始終顯示 {domain} 的 Catch-all 郵箱",
+      "alwaysShowDescription": "「始終顯示」預設開啟；關閉後僅在該網域停用 Catch-all 時從郵箱列表隱藏，不會刪除郵箱或歷史郵件。",
+      "mailboxName": "{domain} 的備援郵箱名稱",
+      "mailboxNamePlaceholder": "例如：catchall"
+    },
     "turnstile": {
       "enable": "啟用 Cloudflare Turnstile",
       "enableDescription": "啟用後，使用者名稱與密碼的登入／註冊需要通過 Turnstile 驗證",
