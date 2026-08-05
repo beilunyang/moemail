@@ -75,10 +75,12 @@ const handleEmail = async (message: ForwardableEmailMessage, env: Env) => {
     }
 
     const parsedMessage = await PostalMime.parse(message.raw)
+    const parsedFromAddress = parsedMessage.from?.address?.trim()
+    const fromAddress = normalizeEmailAddress(parsedFromAddress || message.from)
 
     const savedMessage = await db.insert(messages).values({
       emailId: targetEmail.id,
-      fromAddress: message.from,
+      fromAddress,
       toAddress: originalToAddress,
       subject: parsedMessage.subject || '(无主题)',
       content: parsedMessage.text || '',
