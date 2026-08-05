@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl"
 import { Send, Inbox } from "lucide-react"
 import { Tabs, SlidingTabsList, SlidingTabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { MessageList } from "./message-list"
-import { useSendPermission } from "@/hooks/use-send-permission"
 
 interface MessageListContainerProps {
   email: {
@@ -15,12 +14,20 @@ interface MessageListContainerProps {
   onMessageSelect: (messageId: string | null, messageType?: 'received' | 'sent') => void
   selectedMessageId?: string | null
   refreshTrigger?: number
+  readMessageIds?: Set<string>
+  showSentMessages?: boolean
 }
 
-export function MessageListContainer({ email, onMessageSelect, selectedMessageId, refreshTrigger }: MessageListContainerProps) {
+export function MessageListContainer({
+  email,
+  onMessageSelect,
+  selectedMessageId,
+  refreshTrigger,
+  readMessageIds,
+  showSentMessages = false,
+}: MessageListContainerProps) {
   const t = useTranslations("emails.messages")
   const [activeTab, setActiveTab] = useState<'received' | 'sent'>('received')
-  const { canSend: canSendEmails } = useSendPermission()
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId as 'received' | 'sent')
@@ -29,8 +36,8 @@ export function MessageListContainer({ email, onMessageSelect, selectedMessageId
 
   return (
     <div className="h-full flex flex-col">
-      {canSendEmails ? (
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
+      {showSentMessages ? (
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
           <div className="p-2 border-b border-primary/20">
             <SlidingTabsList>
               <SlidingTabsTrigger value="received">
@@ -43,16 +50,17 @@ export function MessageListContainer({ email, onMessageSelect, selectedMessageId
               </SlidingTabsTrigger>
             </SlidingTabsList>
           </div>
-          
+
           <TabsContent value="received" className="flex-1 overflow-hidden m-0">
             <MessageList
               email={email}
               messageType="received"
               onMessageSelect={onMessageSelect}
               selectedMessageId={selectedMessageId}
+              readMessageIds={readMessageIds}
             />
           </TabsContent>
-          
+
           <TabsContent value="sent" className="flex-1 overflow-hidden m-0">
             <MessageList
               email={email}
@@ -62,7 +70,7 @@ export function MessageListContainer({ email, onMessageSelect, selectedMessageId
               refreshTrigger={refreshTrigger}
             />
           </TabsContent>
-        </Tabs>
+      </Tabs>
       ) : (
         <div className="flex-1 overflow-hidden">
           <MessageList
@@ -70,9 +78,10 @@ export function MessageListContainer({ email, onMessageSelect, selectedMessageId
             messageType="received"
             onMessageSelect={onMessageSelect}
             selectedMessageId={selectedMessageId}
+            readMessageIds={readMessageIds}
           />
         </div>
       )}
     </div>
   )
-} 
+}

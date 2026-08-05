@@ -84,6 +84,7 @@ const handleEmail = async (message: ForwardableEmailMessage, env: Env) => {
       content: parsedMessage.text || '',
       html: parsedMessage.html || '',
       type: 'received',
+      isRead: false,
     }).returning().get()
 
     const webhook = targetEmail.userId

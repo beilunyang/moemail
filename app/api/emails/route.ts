@@ -1,12 +1,13 @@
 import { createDb } from "@/lib/db"
-import { and, asc, eq, gt, inArray, lt, notInArray, or, sql } from "drizzle-orm"
+import { and, asc, eq, gt, inArray, isNull, lt, notInArray, or, sql } from "drizzle-orm"
 import { NextResponse } from "next/server"
-import { emails } from "@/lib/schema"
+import { emails, messages } from "@/lib/schema"
 import { encodeCursor, decodeCursor } from "@/lib/cursor"
 import { getUserId } from "@/lib/apiKey"
 import { getRequestContext } from "@cloudflare/next-on-pages"
 import {
   CATCHALL_EMAIL_KEY,
+  getEmailDomain,
   normalizeEmailAddress,
   parseCatchAllEmailConfig,
 } from "@/lib/catch-all"
@@ -14,6 +15,9 @@ import {
 export const runtime = "edge"
 
 const PAGE_SIZE = 20
+const COUNT_QUERY_CHUNK_SIZE = 80
+
+const emailDomainExpression = sql<string>`LOWER(SUBSTR(${emails.address}, INSTR(${emails.address}, '@') + 1))`
 
 export async function GET(request: Request) {
   const userId = await getUserId()
@@ -24,6 +28,12 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url)
   const cursor = searchParams.get('cursor')
+  const domainParam = searchParams.get('domain')
+  const selectedDomain = domainParam?.trim().toLowerCase() || null
+
+  if (selectedDomain && !/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(selectedDomain)) {
+    return NextResponse.json({ error: "Invalid domain" }, { status: 400 })
+  }
   
   const db = createDb()
 
@@ -39,6 +49,7 @@ export async function GET(request: Request) {
     const visibleCatchAllAddresses = [...new Set(
       catchAllDomainConfigs
         .filter(({ enabled, showAlways }) => enabled || showAlways)
+        .filter(({ address }) => !selectedDomain || getEmailDomain(address) === selectedDomain)
         .map(({ address }) => normalizeEmailAddress(address)),
     )]
     const hiddenCatchAllAddresses = [...new Set(
@@ -50,9 +61,13 @@ export async function GET(request: Request) {
       catchAllDomainConfigs.map((config) => [normalizeEmailAddress(config.address), config]),
     )
 
-    const baseConditions = and(
+    const userActiveConditions = and(
       eq(emails.userId, userId),
       gt(emails.expiresAt, new Date())
+    )
+    const baseConditions = and(
+      userActiveConditions,
+      selectedDomain ? eq(emailDomainExpression, selectedDomain) : undefined,
     )
 
     const regularEmailConditions = catchAllAddresses.length > 0
@@ -67,10 +82,17 @@ export async function GET(request: Request) {
         notInArray(sql<string>`LOWER(TRIM(${emails.address}))`, hiddenCatchAllAddresses),
       )
       : baseConditions
-    const totalResult = await db.select({ count: sql<number>`count(*)` })
-      .from(emails)
-      .where(visibleEmailConditions)
-    const totalCount = Number(totalResult[0].count)
+    const allVisibleEmailConditions = hiddenCatchAllAddresses.length > 0
+      ? and(
+        userActiveConditions,
+        notInArray(sql<string>`LOWER(TRIM(${emails.address}))`, hiddenCatchAllAddresses),
+      )
+      : userActiveConditions
+    const totalCount = cursor
+      ? undefined
+      : Number((await db.select({ count: sql<number>`count(*)` })
+        .from(emails)
+        .where(visibleEmailConditions))[0].count)
     const conditions = [regularEmailConditions]
 
     if (cursor) {
@@ -104,6 +126,14 @@ export async function GET(request: Request) {
         orderBy: asc(emails.address),
       })
       : []
+
+    const ownedDomainRows = !cursor
+      ? await db.select({ domain: emailDomainExpression })
+        .from(emails)
+        .where(allVisibleEmailConditions)
+        .groupBy(emailDomainExpression)
+        .orderBy(emailDomainExpression)
+      : []
     
     const hasMore = results.length > PAGE_SIZE
     const nextCursor = hasMore 
@@ -113,7 +143,7 @@ export async function GET(request: Request) {
         )
       : null
     const regularEmailList = hasMore ? results.slice(0, PAGE_SIZE) : results
-    const emailList = [
+    const emailListWithoutCounts = [
       ...pinnedCatchAllEmails.map((email) => ({
         ...email,
         isCatchAll: true,
@@ -121,11 +151,45 @@ export async function GET(request: Request) {
       })),
       ...regularEmailList.map((email) => ({ ...email, isCatchAll: false })),
     ]
+    const messageCounts = new Map<string, { unreadCount: number; messageCount: number }>()
+    const emailIds = emailListWithoutCounts.map(({ id }) => id)
+
+    for (let index = 0; index < emailIds.length; index += COUNT_QUERY_CHUNK_SIZE) {
+      const emailIdChunk = emailIds.slice(index, index + COUNT_QUERY_CHUNK_SIZE)
+      if (emailIdChunk.length === 0) continue
+
+      const countRows = await db.select({
+        emailId: messages.emailId,
+        messageCount: sql<number>`count(*)`,
+        unreadCount: sql<number>`sum(case when ${messages.isRead} = 0 then 1 else 0 end)`,
+      })
+        .from(messages)
+        .where(and(
+          inArray(messages.emailId, emailIdChunk),
+          or(eq(messages.type, "received"), isNull(messages.type)),
+        ))
+        .groupBy(messages.emailId)
+
+      for (const row of countRows) {
+        messageCounts.set(row.emailId, {
+          unreadCount: Number(row.unreadCount ?? 0),
+          messageCount: Number(row.messageCount ?? 0),
+        })
+      }
+    }
+
+    const emailList = emailListWithoutCounts.map((email) => ({
+      ...email,
+      ...(messageCounts.get(email.id) ?? { unreadCount: 0, messageCount: 0 }),
+    }))
 
     return NextResponse.json({ 
       emails: emailList,
       nextCursor,
       total: totalCount,
+      domains: ownedDomainRows
+        .map(({ domain }) => domain)
+        .filter(Boolean),
     })
   } catch (error) {
     console.error('Failed to fetch user emails:', error)

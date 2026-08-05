@@ -4,6 +4,7 @@ interface SendPermissionResponse {
   canSend: boolean
   error?: string
   remainingEmails?: number
+  enabledDomains?: string[]
 }
 
 export function useSendPermission() {
@@ -11,14 +12,15 @@ export function useSendPermission() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [remainingEmails, setRemainingEmails] = useState<number | undefined>()
+  const [enabledDomains, setEnabledDomains] = useState<string[]>([])
 
   const checkPermission = async () => {
     setLoading(true)
     setError(null)
-    
+
     try {
       const response = await fetch('/api/emails/send-permission')
-      
+
       if (!response.ok) {
         throw new Error('权限检查失败')
       }
@@ -26,7 +28,8 @@ export function useSendPermission() {
       const data = await response.json() as SendPermissionResponse
       setCanSend(data.canSend)
       setRemainingEmails(data.remainingEmails)
-      
+      setEnabledDomains(data.enabledDomains ?? [])
+
       if (!data.canSend && data.error) {
         setError(data.error)
       }
@@ -47,6 +50,7 @@ export function useSendPermission() {
     loading,
     error,
     remainingEmails,
+    enabledDomains,
     checkPermission
   }
-} 
+}

@@ -3,6 +3,9 @@ import { users, userRoles, roles } from "@/lib/schema"
 import { eq, like, or, sql } from "drizzle-orm"
 import { checkPermission } from "@/lib/auth"
 import { PERMISSIONS, ROLES } from "@/lib/permissions"
+import { getRequestContext } from "@cloudflare/next-on-pages"
+import { parseEmailDomains } from "@/lib/catch-all"
+import { getEffectiveAllowedEmailDomains } from "@/lib/domain-access"
 
 export const runtime = "edge"
 
@@ -20,6 +23,8 @@ export async function GET(request: Request) {
   const db = createDb()
 
   try {
+    const env = getRequestContext().env
+    const configuredDomains = parseEmailDomains(await env.SITE_CONFIG.get("EMAIL_DOMAINS"))
     const searchCondition = search
       ? or(
           like(users.username, `%${search}%`),
@@ -50,6 +55,7 @@ export async function GET(request: Request) {
         email: users.email,
         image: users.image,
         role: roles.name,
+        allowedEmailDomains: users.allowedEmailDomains,
       })
       .from(users)
       .leftJoin(userRoles, eq(userRoles.userId, users.id))
@@ -67,10 +73,16 @@ export async function GET(request: Request) {
         email: u.email,
         image: u.image,
         role: u.role || null,
+        allowedDomains: getEffectiveAllowedEmailDomains({
+          configuredDomains,
+          storedDomains: u.allowedEmailDomains,
+          isEmperor: u.role === ROLES.EMPEROR,
+        }),
       })),
       total,
       page,
       pageSize,
+      configuredDomains,
     })
   } catch (error) {
     console.error("Failed to list users:", error)
@@ -115,7 +127,12 @@ export async function POST(request: Request) {
         name: user.name,
         username: user.username,
         email: user.email,
-        role: user.userRoles[0]?.role.name
+        role: user.userRoles[0]?.role.name,
+        allowedDomains: getEffectiveAllowedEmailDomains({
+          configuredDomains: parseEmailDomains(await getRequestContext().env.SITE_CONFIG.get("EMAIL_DOMAINS")),
+          storedDomains: user.allowedEmailDomains,
+          isEmperor: user.userRoles[0]?.role.name === ROLES.EMPEROR,
+        }),
       }
     })
   } catch (error) {

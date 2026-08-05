@@ -311,10 +311,14 @@ System settings are stored in Cloudflare KV, including:
 
 - `DEFAULT_ROLE`: Default role for new users, values: `CIVILIAN`, `KNIGHT`, `DUKE`
 - `EMAIL_DOMAINS`: Supported email domains, comma-separated
+- `CATCHALL_EMAIL`: Per-domain Catch-all mailbox settings (managed from the system settings UI)
+- `RESEND_CONFIG`: Per-domain Resend enablement and API keys (managed from the Resend settings UI)
 - `ADMIN_CONTACT`: Administrator contact info
 - `MAX_EMAILS`: Maximum number of emails per user
 
 **Emperor** role can configure these in the User Profile page.
+
+The Emperor can also choose which configured email domains each non-Emperor user may use. Existing users inherit all configured domains until an explicit restriction is saved, so upgrading does not change their current access.
 
 ## Sending Emails
 
@@ -323,8 +327,10 @@ MoeMail supports sending emails using temporary addresses, based on [Resend](htt
 ### Features
 
 - 📨 **Send from Temp Email**: Use created temporary emails as sender
+- 🌐 **Per-domain Configuration**: Enable Resend and store a separate API key for each email domain
 - 🎯 **Role Limits**: Different roles have different daily sending limits
 - 💌 **HTML Support**: Supports rich text email format
+- 🛡️ **Catch-all Sender Alias**: The Emperor may edit the sender local part when sending from a Catch-all mailbox; the configured domain remains fixed
 
 ### Role Sending Limits
 
@@ -348,13 +354,13 @@ MoeMail supports sending emails using temporary addresses, based on [Resend](htt
    - Login as Emperor
    - Go to User Profile
    - In "Resend Service Configuration":
-     - Enable Sending Service switch
-     - Enter Resend API Key
+     - Enable sending separately for each domain
+     - Enter the corresponding Resend API Key for each enabled domain
      - Set daily limits for Duke and Knight (Optional)
    - Save configuration
 
 3. **Verify Configuration**
-   - After saving, authorized users will see a "Send Email" button in the email list
+   - After saving, authorized users will see a "Send Email" button only for mailboxes whose domain is enabled
    - Click to open dialog and test
 
 ### How to Send
@@ -374,6 +380,8 @@ MoeMail supports sending emails using temporary addresses, based on [Resend](htt
 3. **View History**
    - Sent emails are saved in the message list of the corresponding mailbox
    - View all sent/received emails in mailbox detail page
+
+The mailbox list can be filtered with the **All** and per-domain tabs. Each mailbox displays **unread/total** received-message counts, and unread subjects are shown in bold. Historical messages are treated as read when upgrading; newly received messages are recorded as unread.
 
 ### Notes
 

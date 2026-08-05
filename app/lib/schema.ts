@@ -13,6 +13,7 @@ export const users = sqliteTable("user", {
   image: text("image"),
   username: text("username").unique(),
   password: text("password"),
+  allowedEmailDomains: text("allowed_email_domains"),
 })
 export const accounts = sqliteTable(
   "account",
@@ -51,6 +52,12 @@ export const emails = sqliteTable("email", {
   expiresAtIdx: index("email_expires_at_idx").on(table.expiresAt),
   userIdIdx: index("email_user_id_idx").on(table.userId),
   addressLowerIdx: index("email_address_lower_idx").on(sql`LOWER(${table.address})`),
+  userDomainCreatedAtIdx: index("email_user_domain_created_at_idx").on(
+    table.userId,
+    sql`LOWER(SUBSTR(${table.address}, INSTR(${table.address}, '@') + 1))`,
+    table.createdAt,
+    table.id,
+  ),
 }))
 
 export const messages = sqliteTable("message", {
@@ -64,6 +71,7 @@ export const messages = sqliteTable("message", {
   content: text("content").notNull(),
   html: text("html"),
   type: text("type"),
+  isRead: integer("is_read", { mode: "boolean" }).notNull().default(true),
   receivedAt: integer("received_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -73,6 +81,7 @@ export const messages = sqliteTable("message", {
 }, (table) => ({
   emailIdIdx: index("message_email_id_idx").on(table.emailId),
   emailIdReceivedAtTypeIdx: index("message_email_id_received_at_type_idx").on(table.emailId, table.receivedAt, table.type),
+  emailIdTypeReadIdx: index("message_email_id_type_read_idx").on(table.emailId, table.type, table.isRead),
 }))
 
 export const webhooks = sqliteTable('webhook', {

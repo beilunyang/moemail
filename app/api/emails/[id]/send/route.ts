@@ -5,6 +5,17 @@ import { emails, messages } from "@/lib/schema"
 import { eq } from "drizzle-orm"
 import { getRequestContext } from "@cloudflare/next-on-pages"
 import { checkSendPermission } from "@/lib/send-permissions"
+import {
+  CATCHALL_EMAIL_KEY,
+  getEmailDomain,
+  isValidMailboxName,
+  normalizeEmailAddress,
+  normalizeMailboxName,
+  parseCatchAllEmailConfig,
+} from "@/lib/catch-all"
+import { getUserRole } from "@/lib/auth"
+import { ROLES } from "@/lib/permissions"
+import { getResendConfigForAddress, loadResendConfig } from "@/lib/resend"
 
 export const runtime = "edge"
 
@@ -12,6 +23,7 @@ interface SendEmailRequest {
   to: string
   subject: string
   content: string
+  fromLocalPart?: string
 }
 
 async function sendWithResend(
@@ -60,17 +72,7 @@ export async function POST(
     const { id } = await params
     const db = createDb()
 
-    const permissionResult = await checkSendPermission(userId)
-    if (!permissionResult.canSend) {
-      return NextResponse.json(
-        { error: permissionResult.error },
-        { status: 403 }
-      )
-    }
-    
-    const remainingEmails = permissionResult.remainingEmails
-
-    const { to, subject, content } = await request.json() as SendEmailRequest
+    const { to, subject, content, fromLocalPart } = await request.json() as SendEmailRequest
 
     if (!to || !subject || !content) {
       return NextResponse.json(
@@ -98,28 +100,70 @@ export async function POST(
     }
 
     const env = getRequestContext().env
-    const apiKey = await env.SITE_CONFIG.get("RESEND_API_KEY")
+    const [{ config: resendConfig }, catchAllConfigValue] = await Promise.all([
+      loadResendConfig(env.SITE_CONFIG),
+      env.SITE_CONFIG.get(CATCHALL_EMAIL_KEY),
+    ])
+    const domainResendConfig = getResendConfigForAddress(resendConfig, email.address)
 
-    if (!apiKey) {
+    if (!domainResendConfig?.enabled || !domainResendConfig.apiKey) {
       return NextResponse.json(
-        { error: "Resend 发件服务未配置，请联系管理员" },
-        { status: 500 }
+        { error: "该邮箱域名未启用 Resend 发件服务" },
+        { status: 403 }
       )
     }
 
-    await sendWithResend(to, subject, content, email.address, { apiKey })
+    const permissionResult = await checkSendPermission(userId)
+    if (!permissionResult.canSend) {
+      return NextResponse.json(
+        { error: permissionResult.error },
+        { status: 403 }
+      )
+    }
+
+    const remainingEmails = permissionResult.remainingEmails
+    let fromAddress = normalizeEmailAddress(email.address)
+
+    if (fromLocalPart !== undefined) {
+      const catchAllConfig = parseCatchAllEmailConfig(catchAllConfigValue)
+      const isConfiguredCatchAll = Object.values(catchAllConfig).some(
+        ({ address }) => normalizeEmailAddress(address) === fromAddress,
+      )
+      const userRole = await getUserRole(userId)
+
+      if (!isConfiguredCatchAll || userRole !== ROLES.EMPEROR) {
+        return NextResponse.json(
+          { error: "只有皇帝可以修改 Catch-all 发件邮箱前缀" },
+          { status: 403 },
+        )
+      }
+
+      const normalizedLocalPart = normalizeMailboxName(fromLocalPart)
+      const domain = getEmailDomain(fromAddress)
+      if (!domain || !isValidMailboxName(normalizedLocalPart)) {
+        return NextResponse.json(
+          { error: "发件邮箱前缀格式无效" },
+          { status: 400 },
+        )
+      }
+
+      fromAddress = `${normalizedLocalPart}@${domain}`
+    }
+
+    await sendWithResend(to.trim(), subject.trim(), content, fromAddress, { apiKey: domainResendConfig.apiKey })
 
     await db.insert(messages).values({
       emailId: email.id,
-      fromAddress: email.address,
-      toAddress: to,
-      subject,
+      fromAddress,
+      toAddress: to.trim(),
+      subject: subject.trim(),
       content: '',
       type: "sent",
-      html: content
+      html: content,
+      isRead: true,
     })
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       message: "邮件发送成功",
       remainingEmails
@@ -131,4 +175,4 @@ export async function POST(
       { status: 500 }
     )
   }
-} 
+}

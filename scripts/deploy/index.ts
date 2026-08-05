@@ -404,7 +404,7 @@ const deployEmailWorker = () => {
     console.log("✅ Email Worker deployed successfully");
   } catch (error) {
     console.error("❌ Email Worker deployment failed:", error);
-    // 继续执行而不中断
+    throw error;
   }
 };
 
@@ -500,8 +500,8 @@ const main = async () => {
     await checkAndCreateKVNamespace();
     await checkAndCreatePages();
     pushPagesSecret();
-    deployPages();
     deployEmailWorker();
+    deployPages();
     deployCleanupWorker();
 
     console.log("🎉 Deployment completed successfully");

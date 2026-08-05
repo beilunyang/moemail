@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslations } from "next-intl"
 import { EmailList } from "./email-list"
 import { MessageListContainer } from "./message-list-container"
@@ -10,23 +10,33 @@ import { cn } from "@/lib/utils"
 import { useCopy } from "@/hooks/use-copy"
 import { useSendPermission } from "@/hooks/use-send-permission"
 import { Copy } from "lucide-react"
-
-interface Email {
-  id: string
-  address: string
-}
+import { getEmailDomain } from "@/lib/catch-all"
+import type { MailboxListItem } from "@/types/email"
+import { useEmailStats } from "@/hooks/use-email-stats"
 
 export function ThreeColumnLayout() {
   const t = useTranslations("emails.layout")
-  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null)
+  const [selectedEmail, setSelectedEmail] = useState<MailboxListItem | null>(null)
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null)
   const [selectedMessageType, setSelectedMessageType] = useState<'received' | 'sent'>('received')
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const { copyToClipboard } = useCopy()
-  const { canSend: canSendEmails } = useSendPermission()
+  const [readMessageIds, setReadMessageIds] = useState<Set<string>>(new Set())
+  const readMessageIdsRef = useRef<Set<string>>(new Set())
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null)
+  const { canSend: canSendEmails, enabledDomains } = useSendPermission()
+  const { adjustStats } = useEmailStats()
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)")
+    const updateViewport = () => setIsDesktop(mediaQuery.matches)
+    updateViewport()
+    mediaQuery.addEventListener("change", updateViewport)
+    return () => mediaQuery.removeEventListener("change", updateViewport)
+  }, [])
 
   const columnClass = "border-2 border-primary/20 bg-background rounded-lg overflow-hidden flex flex-col"
-  const headerClass = "p-2 border-b-2 border-primary/20 flex items-center justify-between shrink-0"
+  const headerClass = "h-[50px] p-2 border-b-2 border-primary/20 flex items-center justify-between shrink-0"
   const titleClass = "text-sm font-bold px-2 w-full overflow-hidden"
 
   // 移动端视图逻辑
@@ -51,10 +61,26 @@ export function ThreeColumnLayout() {
     setRefreshTrigger(prev => prev + 1)
   }
 
+  const handleMessageRead = useCallback((messageId: string) => {
+    if (!selectedEmail || readMessageIdsRef.current.has(messageId)) return
+    readMessageIdsRef.current.add(messageId)
+    setReadMessageIds(new Set(readMessageIdsRef.current))
+    adjustStats(selectedEmail.id, { unreadDelta: -1 })
+  }, [adjustStats, selectedEmail])
+
+  const selectedEmailDomain = selectedEmail ? getEmailDomain(selectedEmail.address) : null
+  const canSendFromSelectedEmail = canSendEmails
+    && selectedEmailDomain !== null
+    && enabledDomains.includes(selectedEmailDomain)
+
+  if (isDesktop === null) {
+    return <div className="pb-5 pt-20 h-full" />
+  }
+
   return (
     <div className="pb-5 pt-20 h-full flex flex-col">
-      {/* 桌面端三栏布局 */}
-      <div className="hidden lg:grid grid-cols-12 gap-4 h-full min-h-0">
+      {isDesktop ? (
+      <div className="grid grid-cols-12 gap-4 h-full min-h-0">
         <div className={cn("col-span-3", columnClass)}>
           <div className={headerClass}>
             <h2 className={titleClass}>{t("myEmails")}</h2>
@@ -81,10 +107,11 @@ export function ThreeColumnLayout() {
                       <Copy className="size-4" />
                     </div>
                   </div>
-                  {selectedEmail && canSendEmails && (
-                    <SendDialog 
-                      emailId={selectedEmail.id} 
+                  {selectedEmail && canSendFromSelectedEmail && (
+                    <SendDialog
+                      emailId={selectedEmail.id}
                       fromAddress={selectedEmail.address}
+                      allowCustomFrom={selectedEmail.isCatchAll === true}
                       onSendSuccess={handleSendSuccess}
                     />
                   )}
@@ -101,6 +128,8 @@ export function ThreeColumnLayout() {
                 onMessageSelect={handleMessageSelect}
                 selectedMessageId={selectedMessageId}
                 refreshTrigger={refreshTrigger}
+                readMessageIds={readMessageIds}
+                showSentMessages={canSendEmails}
               />
             </div>
           )}
@@ -119,14 +148,14 @@ export function ThreeColumnLayout() {
                 messageId={selectedMessageId}
                 messageType={selectedMessageType}
                 onClose={() => setSelectedMessageId(null)}
+                onRead={handleMessageRead}
               />
             </div>
           )}
         </div>
       </div>
-
-      {/* 移动端单栏布局 */}
-      <div className="lg:hidden h-full min-h-0">
+      ) : (
+      <div className="h-full min-h-0">
         <div className={cn("h-full", columnClass)}>
           {mobileView === "list" && (
             <>
@@ -162,10 +191,11 @@ export function ThreeColumnLayout() {
                       <Copy className="size-4" />
                     </div>
                   </div>
-                  {canSendEmails && (
-                    <SendDialog 
-                      emailId={selectedEmail.id} 
+                  {canSendFromSelectedEmail && (
+                    <SendDialog
+                      emailId={selectedEmail.id}
                       fromAddress={selectedEmail.address}
+                      allowCustomFrom={selectedEmail.isCatchAll === true}
                       onSendSuccess={handleSendSuccess}
                     />
                   )}
@@ -177,6 +207,8 @@ export function ThreeColumnLayout() {
                   onMessageSelect={handleMessageSelect}
                   selectedMessageId={selectedMessageId}
                   refreshTrigger={refreshTrigger}
+                  readMessageIds={readMessageIds}
+                  showSentMessages={canSendEmails}
                 />
               </div>
             </div>
@@ -199,12 +231,14 @@ export function ThreeColumnLayout() {
                   messageId={selectedMessageId}
                   messageType={selectedMessageType}
                   onClose={() => setSelectedMessageId(null)}
+                  onRead={handleMessageRead}
                 />
               </div>
             </div>
           )}
         </div>
       </div>
+      )}
     </div>
   )
-} 
+}

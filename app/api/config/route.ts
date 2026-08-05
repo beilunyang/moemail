@@ -5,7 +5,7 @@ import { EMAIL_CONFIG } from "@/config"
 import { checkPermission } from "@/lib/auth"
 import { getUserId } from "@/lib/apiKey"
 import { createDb } from "@/lib/db"
-import { emails } from "@/lib/schema"
+import { emails, users } from "@/lib/schema"
 import { eq, sql } from "drizzle-orm"
 import {
   CATCHALL_EMAIL_KEY,
@@ -16,6 +16,7 @@ import {
   parseEmailDomains,
 } from "@/lib/catch-all"
 import type { CatchAllEmailConfig } from "@/lib/catch-all"
+import { getEffectiveAllowedEmailDomains } from "@/lib/domain-access"
 
 export const runtime = "edge"
 
@@ -39,7 +40,26 @@ export async function GET() {
   }
 
   if (!canManageConfig) {
-    return Response.json(response)
+    const userId = await getUserId()
+    if (!userId) {
+      return Response.json({ error: "未登录" }, { status: 401 })
+    }
+
+    const db = createDb()
+    const user = await db.query.users.findFirst({
+      columns: { allowedEmailDomains: true },
+      where: eq(users.id, userId),
+    })
+    const allowedDomains = getEffectiveAllowedEmailDomains({
+      configuredDomains: parseEmailDomains(resolvedEmailDomains),
+      storedDomains: user?.allowedEmailDomains,
+      isEmperor: false,
+    })
+
+    return Response.json({
+      ...response,
+      emailDomains: allowedDomains.join(","),
+    })
   }
 
   const userId = await getUserId()

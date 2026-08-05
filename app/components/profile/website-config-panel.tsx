@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
-import { Settings } from "lucide-react"
+import { Check, Plus, Settings, Trash2 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { useState, useEffect, useMemo } from "react"
 import { ROLES } from "@/lib/permissions"
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select"
 import { EMAIL_CONFIG } from "@/config"
 import { normalizeMailboxName, parseEmailDomains } from "@/lib/catch-all"
+import { refreshSiteConfig } from "@/hooks/use-config"
 
 interface CatchAllDomainSettings {
   enabled: boolean
@@ -33,11 +34,19 @@ const DEFAULT_CATCH_ALL_DOMAIN_SETTINGS: CatchAllDomainSettings = {
   mailboxName: "",
 }
 
-export function WebsiteConfigPanel() {
+interface WebsiteConfigPanelProps {
+  onSaved?: () => void
+}
+
+export function WebsiteConfigPanel({ onSaved }: WebsiteConfigPanelProps) {
   const t = useTranslations("profile.website")
   const tCard = useTranslations("profile.card")
   const [defaultRole, setDefaultRole] = useState<string>("")
-  const [emailDomains, setEmailDomains] = useState<string>("")
+  const [emailDomains, setEmailDomains] = useState<string[]>([])
+  const [emailDomainEditor, setEmailDomainEditor] = useState<{
+    originalDomain: string | null
+    value: string
+  } | null>(null)
   const [adminContact, setAdminContact] = useState<string>("")
   const [maxEmails, setMaxEmails] = useState<string>(EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString())
   const [turnstileEnabled, setTurnstileEnabled] = useState(false)
@@ -49,8 +58,45 @@ export function WebsiteConfigPanel() {
   const { toast } = useToast()
 
   const configuredDomains = useMemo(() => (
-    parseEmailDomains(emailDomains)
+    parseEmailDomains(emailDomains.join(","))
   ), [emailDomains])
+
+  const confirmEmailDomain = () => {
+    if (!emailDomainEditor) return
+
+    const normalizedDomain = emailDomainEditor.value.trim().toLowerCase()
+    if (!normalizedDomain) return
+
+    const domainAlreadyExists = emailDomains.some((domain) => (
+      domain !== emailDomainEditor.originalDomain && domain === normalizedDomain
+    ))
+    if (domainAlreadyExists) {
+      toast({
+        title: t("emailDomainExists"),
+        description: t("emailDomainExists"),
+        variant: "destructive",
+      })
+      return
+    }
+
+    setEmailDomains((current) => emailDomainEditor.originalDomain === null
+      ? [...current, normalizedDomain]
+      : current.map((domain) => (
+        domain === emailDomainEditor.originalDomain ? normalizedDomain : domain
+      )))
+    setEmailDomainEditor(null)
+  }
+
+  const removeEditedEmailDomain = () => {
+    if (!emailDomainEditor) return
+
+    if (emailDomainEditor.originalDomain !== null) {
+      setEmailDomains((current) => current.filter((domain) => (
+        domain !== emailDomainEditor.originalDomain
+      )))
+    }
+    setEmailDomainEditor(null)
+  }
 
 
   useEffect(() => {
@@ -75,7 +121,7 @@ export function WebsiteConfigPanel() {
         }
       }
       setDefaultRole(data.defaultRole)
-      setEmailDomains(data.emailDomains)
+      setEmailDomains(parseEmailDomains(data.emailDomains))
       setAdminContact(data.adminContact)
       setMaxEmails(data.maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString())
       setTurnstileEnabled(Boolean(data.turnstile?.enabled))
@@ -102,7 +148,7 @@ export function WebsiteConfigPanel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           defaultRole, 
-          emailDomains,
+          emailDomains: configuredDomains.join(","),
           adminContact,
           maxEmails: maxEmails || EMAIL_CONFIG.MAX_ACTIVE_EMAILS.toString(),
           catchAll: {
@@ -125,6 +171,8 @@ export function WebsiteConfigPanel() {
         title: t("saveSuccess"),
         description: t("saveSuccess"),
       })
+      await refreshSiteConfig()
+      onSaved?.()
     } catch (error) {
       toast({
         title: t("saveFailed"),
@@ -158,15 +206,78 @@ export function WebsiteConfigPanel() {
           </Select>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="space-y-3">
           <span className="text-sm">{t("emailDomains")}:</span>
-          <div className="flex-1">
-            <Input 
-              value={emailDomains}
-              onChange={(e) => setEmailDomains(e.target.value)}
-              placeholder={t("emailDomainsPlaceholder")}
-            />
+          <div className="flex flex-wrap items-center gap-2">
+            {emailDomains.map((domain) => (
+              <Button
+                key={domain}
+                type="button"
+                variant={emailDomainEditor?.originalDomain === domain ? "secondary" : "outline"}
+                size="sm"
+                className="h-8 rounded-full px-3 font-normal"
+                onClick={() => setEmailDomainEditor({ originalDomain: domain, value: domain })}
+              >
+                {domain}
+              </Button>
+            ))}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={() => setEmailDomainEditor({ originalDomain: null, value: "" })}
+              title={t("addEmailDomain")}
+              aria-label={t("addEmailDomain")}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
           </div>
+          {emailDomainEditor && (
+            <div className="flex items-center gap-2">
+              <Input
+                value={emailDomainEditor.value}
+                onChange={(event) => setEmailDomainEditor((current) => current && ({
+                  ...current,
+                  value: event.target.value,
+                }))}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault()
+                    confirmEmailDomain()
+                  }
+                }}
+                placeholder={t("emailDomainsPlaceholder")}
+                autoFocus
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={confirmEmailDomain}
+                disabled={!emailDomainEditor.value.trim()}
+                title={t("confirmEmailDomain")}
+                aria-label={t("confirmEmailDomain")}
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={removeEditedEmailDomain}
+                title={t("removeEmailDomain")}
+                aria-label={t("removeEmailDomain")}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          {emailDomains.length === 0 && !emailDomainEditor && (
+            <p className="text-xs text-muted-foreground">{t("emailDomainsPlaceholder")}</p>
+          )}
         </div>
 
         <div className="flex items-center gap-4">

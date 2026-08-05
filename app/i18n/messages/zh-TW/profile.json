@@ -64,6 +64,13 @@
     "enableDescription": "開啟後將使用 Resend 發送郵件",
     "apiKey": "Resend API Key",
     "apiKeyPlaceholder": "輸入 Resend API Key",
+    "apiKeyConfigured": "已設定；留空表示維持不變",
+    "domainConfig": "依網域設定 Resend",
+    "domainConfigDescription": "每個網域可獨立啟用並使用自己的 Resend API Key。",
+    "enabledColumn": "啟用",
+    "domainColumn": "網域",
+    "enableDomain": "啟用 {domain} 的 Resend",
+    "removedDomainWarning": "該網域已不存在，將在下次儲存設定時自動移除發件服務設定。",
     "dailyLimit": "每日限額",
     "roleLimits": "允許使用發件功能的角色",
     "save": "儲存設定",
@@ -103,7 +110,11 @@
     "description": "設定網站選項（僅皇帝可用）",
     "defaultRole": "新使用者預設角色",
     "emailDomains": "郵箱網域",
-    "emailDomainsPlaceholder": "多個網域以逗號分隔",
+    "emailDomainsPlaceholder": "輸入郵箱網域，例如 example.com",
+    "addEmailDomain": "新增郵箱網域",
+    "confirmEmailDomain": "確認郵箱網域",
+    "removeEmailDomain": "刪除郵箱網域",
+    "emailDomainExists": "該郵箱網域已存在",
     "adminContact": "管理員聯絡方式",
     "adminContactPlaceholder": "郵箱或其他聯絡方式",
     "maxEmails": "每個使用者最大郵箱數",
@@ -157,6 +168,10 @@
     "deleteConfirmButton": "刪除",
     "cancel": "取消",
     "deleteSuccess": "使用者刪除成功",
-    "deleteFailed": "刪除使用者失敗"
+    "deleteFailed": "刪除使用者失敗",
+    "allDomains": "全部網域",
+    "selectedDomains": "已選 {count} 個網域",
+    "domainsUpdateSuccess": "使用者可用網域更新成功",
+    "domainsUpdateFailed": "更新使用者可用網域失敗"
   }
 }
