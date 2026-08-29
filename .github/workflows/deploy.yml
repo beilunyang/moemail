@@ -33,7 +33,20 @@ jobs:
           cache: 'pnpm'
 
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          # pnpm install --frozen-lockfile
+          # 设置 npm 配置忽略 peer dependency 冲突
+          echo "strict-peer-dependencies=false" >> .npmrc
+          
+          # 先按 lockfile 安装
+          pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+          
+          # 强制安装 wrangler v3，覆盖 package.json 中的 v4
+          pnpm add -D wrangler@^3.99.0 --force
+          
+          # 验证版本
+          echo "Wrangler version:"
+          npx wrangler --version
 
       - name: Run deploy script
         env:

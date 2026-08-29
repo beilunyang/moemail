@@ -10,7 +10,8 @@
 
 <p align="center">
   <span>English</span> | 
-  <a href="./README.zh-CN.md">简体中文</a>
+  <a href="./README.zh-CN.md">简体中文
+    </a>
 </p>
 
 <p align="center">
@@ -235,7 +236,7 @@ To make email domains effective, you also need to configure email routing in the
     - Action: Select "Send to Worker"
     - Destination: Select the "email-receiver-worker" you just deployed
     - Save
-  ![Configure Routing Rules](https://pic.otaku.ren/20241223/AQADNsQxG_K0SVd-.jpg "Configure Routing Rules")
+      ![Configure Routing Rules](https://pic.otaku.ren/20241223/AQADNsQxG_K0SVd-.jpg "Configure Routing Rules")
 
 ### Notes
 - Ensure domain DNS is hosted on Cloudflare.
