@@ -64,6 +64,13 @@
     "enableDescription": "开启后将使用 Resend 发送邮件",
     "apiKey": "Resend API Key",
     "apiKeyPlaceholder": "输入 Resend API Key",
+    "apiKeyConfigured": "已配置；留空表示保持不变",
+    "domainConfig": "按域名配置 Resend",
+    "domainConfigDescription": "每个域名可独立启用并使用自己的 Resend API Key。",
+    "enabledColumn": "启用",
+    "domainColumn": "域名",
+    "enableDomain": "启用 {domain} 的 Resend",
+    "removedDomainWarning": "该域名已不存在，将在下一次保存配置时自动移除发件服务配置。",
     "dailyLimit": "每日限额",
     "roleLimits": "允许使用发件功能的角色",
     "save": "保存配置",
@@ -103,10 +110,26 @@
     "description": "配置网站设置（仅皇帝可用）",
     "defaultRole": "新用户默认角色",
     "emailDomains": "邮箱域名",
-    "emailDomainsPlaceholder": "多个域名用逗号分隔",
+    "emailDomainsPlaceholder": "输入邮箱域名，例如 example.com",
+    "addEmailDomain": "添加邮箱域名",
+    "confirmEmailDomain": "确认邮箱域名",
+    "removeEmailDomain": "删除邮箱域名",
+    "emailDomainExists": "该邮箱域名已存在",
     "adminContact": "管理员联系方式",
     "adminContactPlaceholder": "邮箱或其他联系方式",
     "maxEmails": "每个用户最大邮箱数",
+    "catchAll": {
+      "title": "Catch-all 兜底邮箱",
+      "description": "每个域名独立配置；无论是否启用，邮箱名都可以编辑。",
+      "enabledColumn": "启用",
+      "mailboxColumn": "邮箱名",
+      "alwaysShowColumn": "始终显示",
+      "enableDomain": "启用 {domain} 的 Catch-all",
+      "alwaysShowDomain": "始终显示 {domain} 的 Catch-all 邮箱",
+      "alwaysShowDescription": "“始终显示”默认开启；关闭后仅在该域名停用 Catch-all 时从邮箱列表隐藏，不会删除邮箱或历史邮件。",
+      "mailboxName": "{domain} 的兜底邮箱名",
+      "mailboxNamePlaceholder": "例如：catchall"
+    },
     "turnstile": {
       "enable": "启用 Cloudflare Turnstile",
       "enableDescription": "开启后，账号登录与注册将需要通过 Turnstile 验证",
@@ -145,6 +168,10 @@
     "deleteConfirmButton": "删除",
     "cancel": "取消",
     "deleteSuccess": "用户删除成功",
-    "deleteFailed": "删除用户失败"
+    "deleteFailed": "删除用户失败",
+    "allDomains": "全部域名",
+    "selectedDomains": "已选 {count} 个域名",
+    "domainsUpdateSuccess": "用户可用域名更新成功",
+    "domainsUpdateFailed": "更新用户可用域名失败"
   }
 }

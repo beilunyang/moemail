@@ -64,6 +64,13 @@
     "enableDescription": "When enabled, emails will be sent using Resend",
     "apiKey": "Resend API Key",
     "apiKeyPlaceholder": "Enter Resend API Key",
+    "apiKeyConfigured": "Configured; leave blank to keep it",
+    "domainConfig": "Resend by domain",
+    "domainConfigDescription": "Enable each domain independently and assign its own Resend API key.",
+    "enabledColumn": "Enabled",
+    "domainColumn": "Domain",
+    "enableDomain": "Enable Resend for {domain}",
+    "removedDomainWarning": "This domain no longer exists. Its sending service configuration will be removed the next time you save.",
     "dailyLimit": "Daily Limit",
     "roleLimits": "Roles allowed to use sending feature",
     "save": "Save Configuration",
@@ -103,10 +110,26 @@
     "description": "Configure website settings (Emperor only)",
     "defaultRole": "Default Role for New Users",
     "emailDomains": "Email Domains",
-    "emailDomainsPlaceholder": "Separate multiple domains with commas",
+    "emailDomainsPlaceholder": "Enter an email domain, for example example.com",
+    "addEmailDomain": "Add email domain",
+    "confirmEmailDomain": "Confirm email domain",
+    "removeEmailDomain": "Remove email domain",
+    "emailDomainExists": "This email domain already exists",
     "adminContact": "Admin Contact",
     "adminContactPlaceholder": "Email or other contact method",
     "maxEmails": "Max Emails per User",
+    "catchAll": {
+      "title": "Catch-all mailboxes",
+      "description": "Configure each domain independently. Mailbox names remain editable whether the domain is enabled or disabled.",
+      "enabledColumn": "Enabled",
+      "mailboxColumn": "Mailbox",
+      "alwaysShowColumn": "Always show",
+      "enableDomain": "Enable Catch-all for {domain}",
+      "alwaysShowDomain": "Always show the Catch-all mailbox for {domain}",
+      "alwaysShowDescription": "Always show is enabled by default. Turn it off to hide this mailbox from the list only while its Catch-all routing is disabled.",
+      "mailboxName": "Mailbox name for {domain}",
+      "mailboxNamePlaceholder": "For example: catchall"
+    },
     "turnstile": {
       "enable": "Enable Cloudflare Turnstile",
       "enableDescription": "When enabled, username/password login and registration require Turnstile verification",
@@ -145,6 +168,10 @@
     "deleteConfirmButton": "Delete",
     "cancel": "Cancel",
     "deleteSuccess": "User deleted successfully",
-    "deleteFailed": "Failed to delete user"
+    "deleteFailed": "Failed to delete user",
+    "allDomains": "All domains",
+    "selectedDomains": "{count} domains selected",
+    "domainsUpdateSuccess": "User domain access updated",
+    "domainsUpdateFailed": "Failed to update user domain access"
   }
 }

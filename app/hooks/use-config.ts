@@ -34,29 +34,35 @@ const useConfigStore = create<ConfigStore>((set) => ({
         config: {
           defaultRole: data.defaultRole || ROLES.CIVILIAN,
           emailDomains: data.emailDomains,
-          emailDomainsArray: data.emailDomains.split(','),
+          emailDomainsArray: data.emailDomains
+            .split(',')
+            .map((domain) => domain.trim().toLowerCase())
+            .filter(Boolean),
           adminContact: data.adminContact || "",
           maxEmails: Number(data.maxEmails) || EMAIL_CONFIG.MAX_ACTIVE_EMAILS
         },
         loading: false
       })
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : "获取配置失败",
-        loading: false 
+        loading: false
       })
     }
   }
 }))
 
+export const refreshSiteConfig = () => useConfigStore.getState().fetch()
+
 export function useConfig() {
   const store = useConfigStore()
+  const fetchConfig = store.fetch
 
   useEffect(() => {
     if (!store.config && !store.loading) {
-      store.fetch()
+      fetchConfig()
     }
-  }, [store.config, store.loading])
+  }, [fetchConfig, store.config, store.loading])
 
   return store
-} 
+}

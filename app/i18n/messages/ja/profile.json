@@ -64,6 +64,13 @@
     "enableDescription": "有効にすると Resend を利用してメールを送信します",
     "apiKey": "Resend API Key",
     "apiKeyPlaceholder": "Resend API Key を入力",
+    "apiKeyConfigured": "設定済み。空欄のままで変更しません",
+    "domainConfig": "ドメイン別 Resend 設定",
+    "domainConfigDescription": "ドメインごとに個別に有効化し、Resend API Key を設定できます。",
+    "enabledColumn": "有効",
+    "domainColumn": "ドメイン",
+    "enableDomain": "{domain} の Resend を有効化",
+    "removedDomainWarning": "このドメインは存在しません。次回の設定保存時に送信サービス設定が自動的に削除されます。",
     "dailyLimit": "1日の上限",
     "roleLimits": "送信機能を許可するロール",
     "save": "設定を保存",
@@ -103,10 +110,26 @@
     "description": "サイトの設定を管理（皇帝のみ利用可能）",
     "defaultRole": "新規ユーザーのデフォルトロール",
     "emailDomains": "メールボックスドメイン",
-    "emailDomainsPlaceholder": "複数のドメインはカンマで区切ります",
+    "emailDomainsPlaceholder": "メールドメインを入力（例: example.com）",
+    "addEmailDomain": "メールドメインを追加",
+    "confirmEmailDomain": "メールドメインを確定",
+    "removeEmailDomain": "メールドメインを削除",
+    "emailDomainExists": "このメールドメインは既に存在します",
     "adminContact": "管理者連絡先",
     "adminContactPlaceholder": "メールまたはその他の連絡先",
     "maxEmails": "ユーザーあたりの最大メールボックス数",
+    "catchAll": {
+      "title": "Catch-all メールボックス",
+      "description": "ドメインごとに個別設定できます。有効・無効に関係なくメールボックス名を編集できます。",
+      "enabledColumn": "有効",
+      "mailboxColumn": "メールボックス",
+      "alwaysShowColumn": "常に表示",
+      "enableDomain": "{domain} の Catch-all を有効化",
+      "alwaysShowDomain": "{domain} の Catch-all メールボックスを常に表示",
+      "alwaysShowDescription": "「常に表示」はデフォルトで有効です。オフにすると、Catch-all が無効な間だけ一覧から非表示になります。メールや履歴は削除されません。",
+      "mailboxName": "{domain} のメールボックス名",
+      "mailboxNamePlaceholder": "例：catchall"
+    },
     "turnstile": {
       "enable": "Cloudflare Turnstile を有効化",
       "enableDescription": "有効にすると、ユーザー名とパスワードでのログイン・登録に Turnstile 認証が必要になります",
@@ -145,6 +168,10 @@
     "deleteConfirmButton": "削除",
     "cancel": "キャンセル",
     "deleteSuccess": "ユーザーを削除しました",
-    "deleteFailed": "ユーザーの削除に失敗しました"
+    "deleteFailed": "ユーザーの削除に失敗しました",
+    "allDomains": "すべてのドメイン",
+    "selectedDomains": "{count} ドメインを選択",
+    "domainsUpdateSuccess": "ユーザーのドメイン権限を更新しました",
+    "domainsUpdateFailed": "ユーザーのドメイン権限を更新できませんでした"
   }
 }

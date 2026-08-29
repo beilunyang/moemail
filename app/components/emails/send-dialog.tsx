@@ -14,14 +14,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { getEmailDomain, getEmailLocalPart } from "@/lib/catch-all"
 
 interface SendDialogProps {
   emailId: string
   fromAddress: string
+  allowCustomFrom?: boolean
   onSendSuccess?: () => void
 }
 
-export function SendDialog({ emailId, fromAddress, onSendSuccess }: SendDialogProps) {
+export function SendDialog({ emailId, fromAddress, allowCustomFrom = false, onSendSuccess }: SendDialogProps) {
   const t = useTranslations("emails.send")
   const tList = useTranslations("emails.list")
   const tCommon = useTranslations("common.actions")
@@ -30,10 +32,11 @@ export function SendDialog({ emailId, fromAddress, onSendSuccess }: SendDialogPr
   const [to, setTo] = useState("")
   const [subject, setSubject] = useState("")
   const [content, setContent] = useState("")
+  const [fromLocalPart, setFromLocalPart] = useState(getEmailLocalPart(fromAddress) ?? "")
   const { toast } = useToast()
 
   const handleSend = async () => {
-    if (!to.trim() || !subject.trim() || !content.trim()) {
+    if (!to.trim() || !subject.trim() || !content.trim() || (allowCustomFrom && !fromLocalPart.trim())) {
       toast({
         title: tList("error"),
         description: t("toPlaceholder") + ", " + t("subjectPlaceholder") + ", " + t("contentPlaceholder"),
@@ -47,7 +50,12 @@ export function SendDialog({ emailId, fromAddress, onSendSuccess }: SendDialogPr
       const response = await fetch(`/api/emails/${emailId}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to, subject, content })
+        body: JSON.stringify({
+          to,
+          subject,
+          content,
+          ...(allowCustomFrom ? { fromLocalPart } : {}),
+        })
       })
 
       if (!response.ok) {
@@ -68,9 +76,9 @@ export function SendDialog({ emailId, fromAddress, onSendSuccess }: SendDialogPr
       setTo("")
       setSubject("")
       setContent("")
-      
+
       onSendSuccess?.()
-    
+
     } catch {
       toast({
         title: tList("error"),
@@ -83,13 +91,19 @@ export function SendDialog({ emailId, fromAddress, onSendSuccess }: SendDialogPr
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen)
+        if (nextOpen) setFromLocalPart(getEmailLocalPart(fromAddress) ?? "")
+      }}
+    >
       <TooltipProvider>
         <Tooltip>
           <DialogTrigger asChild>
             <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 className="h-8 gap-2 hover:bg-primary/10 hover:text-primary transition-colors"
               >
@@ -108,9 +122,27 @@ export function SendDialog({ emailId, fromAddress, onSendSuccess }: SendDialogPr
           <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <div className="text-sm text-muted-foreground">
-            {t("from")}: {fromAddress}
-          </div>
+          {allowCustomFrom ? (
+            <div className="space-y-1.5">
+              <div className="text-sm text-muted-foreground">{t("from")}</div>
+              <div className="flex items-center rounded-md border border-input bg-background">
+                <Input
+                  value={fromLocalPart}
+                  onChange={(event) => setFromLocalPart(event.target.value)}
+                  placeholder={t("fromPrefixPlaceholder")}
+                  className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+                <span className="shrink-0 pr-3 text-sm text-muted-foreground">
+                  @{getEmailDomain(fromAddress)}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">{t("catchAllFromDescription")}</p>
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              {t("from")}: {fromAddress}
+            </div>
+          )}
           <Input
             value={to}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTo(e.target.value)}
@@ -139,4 +171,4 @@ export function SendDialog({ emailId, fromAddress, onSendSuccess }: SendDialogPr
       </DialogContent>
     </Dialog>
   )
-} 
+}

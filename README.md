@@ -114,7 +114,9 @@ cp wrangler.example.json wrangler.json
 cp wrangler.email.example.json wrangler.email.json
 cp wrangler.cleanup.example.json wrangler.cleanup.json
 ```
-Set Cloudflare D1 database name and database ID.
+Set the Cloudflare D1 database name and database ID, and make sure the
+`SITE_CONFIG` binding in `wrangler.json` and `wrangler.email.json` uses the same
+KV namespace ID.
 
 4. Setup Environment Variables:
 ```bash
@@ -218,6 +220,12 @@ This project supports automated deployment using GitHub Actions. It supports the
 In the MoeMail User Profile page, you can configure the site's email domains. Supports multiple domain configurations, separated by commas.
 ![Email Domain Configuration](https://pic.otaku.ren/20241227/AQAD88AxG67zeVd-.jpg "Email Domain Configuration")
 
+The Emperor can configure Catch-all independently for each domain in Website Settings. Every row contains Enabled, Mailbox, and Always show controls. Mailbox names remain editable at all times; Always show defaults to on and, when off, hides that mailbox only while Catch-all routing for its domain is disabled. After confirming that the complete address is not occupied, the backend creates a non-expiring mailbox owned by the Emperor. Each domain's address, enabled state, and visibility setting are stored together in the `CATCHALL_EMAIL` JSON object in `SITE_CONFIG`. Disabling, hiding, re-enabling, or renaming does not replace the mailbox record, so its ID and historical messages remain unchanged.
+
+An “unknown recipient” means that the complete address in `message.to` does not exist in the `email` table. For example, mail arrives for `random@example.com` even though that mailbox was never created. The message is stored in the Catch-all mailbox for `example.com`, while the message record and webhook keep `random@example.com` in `toAddress`. MoeMail does not create an `email` record for `random@example.com`. If Catch-all is disabled, invalid, or its mailbox is missing, the Email Worker logs the reason and drops the message.
+
+The Email Worker must bind the same `SITE_CONFIG` KV namespace as the main application. The automatic deployment script synchronizes this namespace ID; keep both Wrangler files aligned when configuring them manually.
+
 ### Cloudflare Email Routing Configuration
 
 To make email domains effective, you also need to configure email routing in the Cloudflare console to forward received emails to the Email Worker.
@@ -303,10 +311,14 @@ System settings are stored in Cloudflare KV, including:
 
 - `DEFAULT_ROLE`: Default role for new users, values: `CIVILIAN`, `KNIGHT`, `DUKE`
 - `EMAIL_DOMAINS`: Supported email domains, comma-separated
+- `CATCHALL_EMAIL`: Per-domain Catch-all mailbox settings (managed from the system settings UI)
+- `RESEND_CONFIG`: Per-domain Resend enablement and API keys (managed from the Resend settings UI)
 - `ADMIN_CONTACT`: Administrator contact info
 - `MAX_EMAILS`: Maximum number of emails per user
 
 **Emperor** role can configure these in the User Profile page.
+
+The Emperor can also choose which configured email domains each non-Emperor user may use. Existing users inherit all configured domains until an explicit restriction is saved, so upgrading does not change their current access.
 
 ## Sending Emails
 
@@ -315,8 +327,10 @@ MoeMail supports sending emails using temporary addresses, based on [Resend](htt
 ### Features
 
 - 📨 **Send from Temp Email**: Use created temporary emails as sender
+- 🌐 **Per-domain Configuration**: Enable Resend and store a separate API key for each email domain
 - 🎯 **Role Limits**: Different roles have different daily sending limits
 - 💌 **HTML Support**: Supports rich text email format
+- 🛡️ **Catch-all Sender Alias**: The Emperor may edit the sender local part when sending from a Catch-all mailbox; the configured domain remains fixed
 
 ### Role Sending Limits
 
@@ -340,13 +354,13 @@ MoeMail supports sending emails using temporary addresses, based on [Resend](htt
    - Login as Emperor
    - Go to User Profile
    - In "Resend Service Configuration":
-     - Enable Sending Service switch
-     - Enter Resend API Key
+     - Enable sending separately for each domain
+     - Enter the corresponding Resend API Key for each enabled domain
      - Set daily limits for Duke and Knight (Optional)
    - Save configuration
 
 3. **Verify Configuration**
-   - After saving, authorized users will see a "Send Email" button in the email list
+   - After saving, authorized users will see a "Send Email" button only for mailboxes whose domain is enabled
    - Click to open dialog and test
 
 ### How to Send
@@ -366,6 +380,8 @@ MoeMail supports sending emails using temporary addresses, based on [Resend](htt
 3. **View History**
    - Sent emails are saved in the message list of the corresponding mailbox
    - View all sent/received emails in mailbox detail page
+
+The mailbox list can be filtered with the **All** and per-domain tabs. Each mailbox displays **unread/total** received-message counts, and unread subjects are shown in bold. Historical messages are treated as read when upgrading; newly received messages are recorded as unread.
 
 ### Notes
 

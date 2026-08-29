@@ -114,7 +114,8 @@ cp wrangler.example.json wrangler.json
 cp wrangler.email.example.json wrangler.email.json
 cp wrangler.cleanup.example.json wrangler.cleanup.json
 ```
-设置 Cloudflare D1 数据库名以及数据库 ID
+设置 Cloudflare D1 数据库名及数据库 ID，并确保 `wrangler.json` 与
+`wrangler.email.json` 中的 `SITE_CONFIG` 使用同一个 KV namespace ID。
 
 4. 设置环境变量：
 ```bash
@@ -217,6 +218,12 @@ pnpm dlx tsx ./scripts/deploy/index.ts
 在 MoeMail 个人中心页面，可以配置网站的邮箱域名，支持多域名配置，多个域名用逗号分隔
 ![邮箱域名配置](https://pic.otaku.ren/20241227/AQAD88AxG67zeVd-.jpg "邮箱域名配置")
 
+皇帝可以在个人中心的“网站设置”中按域名独立配置 Catch-all。每个域名均包含“启用”“邮箱名”和“始终显示”三个选项；邮箱名始终可以编辑，“始终显示”默认开启，关闭后仅在该域名停用 Catch-all 时从邮箱列表隐藏。后台确认完整地址尚未被占用后，会创建属于当前皇帝且没有有效期的 Catch-all 邮箱。所有域名的地址、启用状态和显示设置统一保存在 `SITE_CONFIG` 的 `CATCHALL_EMAIL` JSON 对象中。停用或隐藏不会删除邮箱及邮件；重新启用或修改邮箱名时，系统会更新同一条邮箱记录，邮箱 ID 和历史邮件保持不变。
+
+“未知收件人”是指收到邮件时，`message.to` 对应的完整地址在 `email` 表中不存在。例如尚未创建 `random@example.com`，却收到了发往该地址的邮件。此时邮件会保存到 `example.com` 对应的 Catch-all 邮箱，但邮件记录和 Webhook 的 `toAddress` 仍是 `random@example.com`；系统不会把 `random@example.com` 自动创建到 `email` 表。未启用 Catch-all、配置失效或兜底邮箱不存在时，Email Worker 会记录日志并丢弃邮件。
+
+Email Worker 必须绑定与主应用相同的 `SITE_CONFIG` KV。自动部署脚本会同步写入该 namespace ID；手动维护 Wrangler 配置时也需要保持两者一致。
+
 ### Cloudflare 邮件路由配置
 
 为了使邮箱域名生效，还需要在 Cloudflare 控制台配置邮件路由，将收到的邮件转发给 Email Worker 处理。
@@ -302,10 +309,14 @@ pnpm dlx tsx ./scripts/deploy/index.ts
 
 - `DEFAULT_ROLE`: 新注册用户默认角色，可选值为 `CIVILIAN`、`KNIGHT`、`DUKE`
 - `EMAIL_DOMAINS`: 支持的邮箱域名，多个域名用逗号分隔
+- `CATCHALL_EMAIL`: 各域名的 Catch-all 邮箱配置（通过系统设置界面管理）
+- `RESEND_CONFIG`: 各域名的 Resend 启用状态和 API Key（通过 Resend 设置界面管理）
 - `ADMIN_CONTACT`: 管理员联系方式
 - `MAX_EMAILS`: 每个用户可创建的最大邮箱数量
 
 **皇帝**角色可以在个人中心页面设置
+
+皇帝还可以为其他用户选择允许创建邮箱的域名。升级后，尚未单独设置域名权限的旧用户会继续继承全部已配置域名，不会改变其现有权限。
 
 ## 发件功能
 
@@ -314,8 +325,10 @@ MoeMail 支持使用临时邮箱发送邮件，基于 [Resend](https://resend.co
 ### 功能特性
 
 - 📨 **临时邮箱发件**：可以使用创建的临时邮箱作为发件人发送邮件
+- 🌐 **按域名配置**：每个邮箱域名可以独立启用 Resend，并保存各自的 API Key
 - 🎯 **角色权限控制**：不同角色有不同的每日发件限制
 - 💌 **支持 HTML**：支持发送富文本格式邮件
+- 🛡️ **Catch-all 发件别名**：皇帝从 Catch-all 邮箱发件时可以修改发件地址前缀，域名保持不变
 
 ### 角色发件权限
 
@@ -339,13 +352,13 @@ MoeMail 支持使用临时邮箱发送邮件，基于 [Resend](https://resend.co
    - 皇帝角色登录 MoeMail
    - 进入个人中心页面
    - 在"Resend 发件服务配置"部分：
-     - 启用发件服务开关
-     - 填入 Resend API Key
+     - 按域名分别启用发件服务
+     - 为每个启用的域名填入对应的 Resend API Key
      - 设置公爵和骑士的每日发件限制（可选）
    - 点击保存配置
 
 3. **验证配置**
-   - 配置保存后，有权限的用户在邮箱列表页面会看到"发送邮件"按钮
+   - 配置保存后，有权限的用户只会在已启用域名的邮箱中看到"发送邮件"按钮
    - 点击按钮可以打开发件对话框进行测试
 
 ### 使用发件功能
@@ -365,6 +378,8 @@ MoeMail 支持使用临时邮箱发送邮件，基于 [Resend](https://resend.co
 3. **查看发送记录**
    - 发送的邮件会自动保存到对应邮箱的消息列表中
    - 可以在邮箱详情页面查看所有发送和接收的邮件
+
+邮箱列表支持使用“全部”和各域名页签进行筛选；每个邮箱会显示“未读/收件总数”，未读邮件主题以粗体展示。升级时历史邮件统一视为已读，新收到的邮件会记录为未读。
 
 ### 注意事项
 

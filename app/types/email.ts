@@ -3,6 +3,17 @@ export interface ExpiryOption {
   value: number
 }
 
+export interface MailboxListItem {
+  id: string
+  address: string
+  createdAt: number
+  expiresAt: number
+  isCatchAll?: boolean
+  isCatchAllEnabled?: boolean
+  unreadCount: number
+  messageCount: number
+}
+
 export const EXPIRY_OPTIONS: ExpiryOption[] = [
   { label: '1小时', value: 1000 * 60 * 60 },
   { label: '24小时', value: 1000 * 60 * 60 * 24 },

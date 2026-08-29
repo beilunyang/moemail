@@ -15,6 +15,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -41,6 +47,7 @@ interface UserItem {
   email: string | null
   image: string | null
   role: string | null
+  allowedDomains: string[]
 }
 
 const PAGE_SIZE = 10
@@ -54,6 +61,8 @@ export function PromotePanel() {
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(true)
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null)
+  const [updatingDomainsUserId, setUpdatingDomainsUserId] = useState<string | null>(null)
+  const [configuredDomains, setConfiguredDomains] = useState<string[]>([])
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [userToDelete, setUserToDelete] = useState<UserItem | null>(null)
   const { toast } = useToast()
@@ -84,9 +93,11 @@ export function PromotePanel() {
         total: number
         page: number
         pageSize: number
+        configuredDomains: string[]
       }
       setUsers(data.users)
       setTotal(data.total)
+      setConfiguredDomains(data.configuredDomains)
     } catch {
       toast({
         title: t("updateFailed"),
@@ -129,6 +140,40 @@ export function PromotePanel() {
       })
     } finally {
       setUpdatingUserId(null)
+    }
+  }
+
+  const handleDomainToggle = async (user: UserItem, domain: string) => {
+    const nextDomains = user.allowedDomains.includes(domain)
+      ? user.allowedDomains.filter((currentDomain) => currentDomain !== domain)
+      : [...user.allowedDomains, domain]
+
+    setUpdatingDomainsUserId(user.id)
+    try {
+      const res = await fetch(`/api/users/${user.id}/domains`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domains: nextDomains }),
+      })
+      if (!res.ok) {
+        const error = await res.json() as { error: string }
+        throw new Error(error.error)
+      }
+      const data = await res.json() as { allowedDomains: string[] }
+      setUsers((current) => current.map((currentUser) => (
+        currentUser.id === user.id
+          ? { ...currentUser, allowedDomains: data.allowedDomains }
+          : currentUser
+      )))
+      toast({ title: t("domainsUpdateSuccess") })
+    } catch (error) {
+      toast({
+        title: t("domainsUpdateFailed"),
+        description: error instanceof Error ? error.message : undefined,
+        variant: "destructive",
+      })
+    } finally {
+      setUpdatingDomainsUserId(null)
     }
   }
 
@@ -201,7 +246,7 @@ export function PromotePanel() {
               return (
                 <div
                   key={user.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
+                  className="flex flex-wrap items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
                 >
                   {user.image ? (
                     <img
@@ -225,12 +270,45 @@ export function PromotePanel() {
                   </div>
 
                   {isEmperor ? (
-                    <div className="flex items-center gap-1.5 text-sm text-amber-600 font-medium px-3">
-                      <Crown className="w-4 h-4" />
-                      {roleNames[ROLES.EMPEROR]}
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground">{t("allDomains")}</span>
+                      <div className="flex items-center gap-1.5 text-sm text-amber-600 font-medium px-3">
+                        <Crown className="w-4 h-4" />
+                        {roleNames[ROLES.EMPEROR]}
+                      </div>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-36 justify-between text-xs"
+                            disabled={updatingDomainsUserId === user.id}
+                          >
+                            <span className="truncate">
+                              {user.allowedDomains.length === configuredDomains.length
+                                ? t("allDomains")
+                                : t("selectedDomains", { count: user.allowedDomains.length })}
+                            </span>
+                            {updatingDomainsUserId === user.id && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                          {configuredDomains.map((domain) => (
+                            <DropdownMenuCheckboxItem
+                              key={domain}
+                              checked={user.allowedDomains.includes(domain)}
+                              disabled={updatingDomainsUserId === user.id}
+                              onSelect={(event) => event.preventDefault()}
+                              onCheckedChange={() => handleDomainToggle(user, domain)}
+                            >
+                              {domain}
+                            </DropdownMenuCheckboxItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       <div className="relative">
                         {isUpdating && (
                           <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded z-10">

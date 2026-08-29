@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { User } from "next-auth"
 import { useTranslations, useLocale } from "next-intl"
 import Image from "next/image"
@@ -59,6 +60,7 @@ const providerConfigs = {
 } as const
 
 export function ProfileCard({ user }: ProfileCardProps) {
+  const [websiteConfigRevision, setWebsiteConfigRevision] = useState(0)
   const t = useTranslations("profile.card")
   const tAuth = useTranslations("auth.signButton")
   const tWebhook = useTranslations("profile.webhook")
@@ -145,8 +147,12 @@ export function ProfileCard({ user }: ProfileCardProps) {
         </div>
       )}
 
-      {canManageConfig && <WebsiteConfigPanel />}
-      {canManageConfig && <EmailServiceConfig />}
+      {canManageConfig && (
+        <WebsiteConfigPanel
+          onSaved={() => setWebsiteConfigRevision((revision) => revision + 1)}
+        />
+      )}
+      {canManageConfig && <EmailServiceConfig key={websiteConfigRevision} />}
       {canPromote && <PromotePanel />}
       {canManageWebhook && <ApiKeyPanel />}
 
@@ -168,4 +174,4 @@ export function ProfileCard({ user }: ProfileCardProps) {
       </div>
     </div>
   )
-} 
+}
