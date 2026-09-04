@@ -5,6 +5,7 @@ import { eq, and, lt, or, sql, ne, isNull } from "drizzle-orm"
 import { encodeCursor, decodeCursor } from "@/lib/cursor"
 import { getUserId } from "@/lib/apiKey"
 import { checkBasicSendPermission } from "@/lib/send-permissions"
+import { canUserAccessAllEmails } from "@/lib/email-access"
 
 export const runtime = "edge"
 
@@ -13,15 +14,21 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId()
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
   try {
     const db = createDb()
     const { id } = await params
+    const canAccessAll = await canUserAccessAllEmails(userId)
     const email = await db.query.emails.findFirst({
-      where: and(
-        eq(emails.id, id),
-        eq(emails.userId, userId!)
-      )
+      where: canAccessAll
+        ? eq(emails.id, id)
+        : and(
+            eq(emails.id, id),
+            eq(emails.userId, userId)
+          )
     })
 
     if (!email) {
@@ -61,8 +68,12 @@ export async function GET(
     const { id } = await params
 
     const userId = await getUserId()
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     if (messageType === 'sent') {
-      const permissionResult = await checkBasicSendPermission(userId!)
+      const permissionResult = await checkBasicSendPermission(userId)
       if (!permissionResult.canSend) {
         return NextResponse.json(
           { error: permissionResult.error || "您没有查看发送邮件的权限" },
@@ -71,11 +82,14 @@ export async function GET(
       }
     }
 
+    const canAccessAll = await canUserAccessAllEmails(userId)
     const email = await db.query.emails.findFirst({
-      where: and(
-        eq(emails.id, id),
-        eq(emails.userId, userId!)
-      )
+      where: canAccessAll
+        ? eq(emails.id, id)
+        : and(
+            eq(emails.id, id),
+            eq(emails.userId, userId)
+          )
     })
 
     if (!email) {

@@ -3,6 +3,7 @@ import { emailShares, emails } from "@/lib/schema"
 import { eq, and } from "drizzle-orm"
 import { NextResponse } from "next/server"
 import { getUserId } from "@/lib/apiKey"
+import { canUserAccessAllEmails } from "@/lib/email-access"
 
 export const runtime = "edge"
 
@@ -20,9 +21,11 @@ export async function DELETE(
   const db = createDb()
 
   try {
-    // 验证邮箱所有权
+    const canAccessAll = await canUserAccessAllEmails(userId)
     const email = await db.query.emails.findFirst({
-      where: and(eq(emails.id, emailId), eq(emails.userId, userId))
+      where: canAccessAll
+        ? eq(emails.id, emailId)
+        : and(eq(emails.id, emailId), eq(emails.userId, userId))
     })
 
     if (!email) {
@@ -43,4 +46,3 @@ export async function DELETE(
     )
   }
 }
-
