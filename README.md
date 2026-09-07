@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/beilunyang-moemail-badge.png)](https://mseep.ai/app/beilunyang-moemail)
+
 
 <p align="center">
   <img src="public/icons/icon-192x192.png" alt="MoeMail Logo" width="100" height="100">
