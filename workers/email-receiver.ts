@@ -7,15 +7,30 @@ import { WEBHOOK_CONFIG } from '../app/config/webhook'
 import { EmailMessage } from '../app/lib/webhook'
 
 const handleEmail = async (message: ForwardableEmailMessage, env: Env) => {
+  console.log("Received email message:", {
+    to: message.to,
+    from: message.from,
+    subject: message.headers.get('subject')
+  })
+
   const db = drizzle(env.DB, { schema: { messages, emails, webhooks } })
 
-  const parsedMessage = await PostalMime.parse(message.raw)
-
-  console.log("parsedMessage:", parsedMessage)
+  let parsedMessage
+  try {
+    parsedMessage = await PostalMime.parse(message.raw)
+    console.log("parsedMessage subject:", parsedMessage.subject)
+  } catch (parseError) {
+    console.error("Failed to parse message:", parseError)
+    return
+  }
 
   try {
+    // Handle message.to - it might be an array or object
+    const toAddress = typeof message.to === 'string' ? message.to : message.headers.get('to') || ''
+    console.log("Looking for email:", toAddress.toLowerCase())
+
     const targetEmail = await db.query.emails.findFirst({
-      where: eq(sql`LOWER(${emails.address})`, message.to.toLowerCase())
+      where: eq(sql`LOWER(${emails.address})`, toAddress.toLowerCase())
     })
 
     if (!targetEmail) {
