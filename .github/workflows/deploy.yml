@@ -10,19 +10,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Get full git history for checking file changes
-
-      - name: Get previous tag
-        id: previoustag
-        if: github.event_name == 'push'
-        run: |
-          echo "tag=$(git describe --tags --abbrev=0 HEAD^)" >> $GITHUB_OUTPUT
-        continue-on-error: true
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        # 如果不需要对比历史 tag，fetch-depth: 1 (默认) 即可，能加快 checkout 速度
+        # with:
+        #   fetch-depth: 0 
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4  # [修复] 升级到 v4
         with:
           version: 9
 
@@ -50,10 +45,11 @@ jobs:
           AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
           AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-        run: pnpm dlx tsx scripts/deploy/index.ts
+        # [修复] 改用 pnpm exec，避免 dlx 每次重新下载 tsx 和 esbuild
+        run: pnpm exec tsx scripts/deploy/index.ts 
 
-      # Clean up
       - name: Post deployment cleanup
+        if: always() # [优化] 即使上一步失败也执行清理
         run: |
-          rm -f .env*.*
-          rm -f wrangler*.json
+          # [修复] 更严谨的清理规则，确保 .env 本身也被清理
+          rm -f .env .env.* wrangler*.json
